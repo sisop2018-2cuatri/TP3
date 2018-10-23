@@ -1,0 +1,32 @@
+// Archivo de configuración
+// los valores se toman desde el caracter '=' hasta el salto de linea
+// toda linea que comienza con // es ignorada
+// ------------------------
+
+// modo de ejecución (int):
+//     0==RELEASE
+//     1==DEBUG
+// en modo DEBUG se emiten mensajes de estado
+// en modo RELEASE únicamente mensajes de error
+MODO_EJECUCION=DEBUG
+
+// mostrar ayuda en pantalla al iniciar
+//     0==FALSE
+//     1==TRUE
+MOSTRAR_AYUDA=TRUE
+
+// dirección del servidor (char[1000]):
+SERVER_DIRECCION=
+
+// (int) puerto de conexión al socket del servidor:
+SERVER_PUERTO=
+
+// si se puede conectar, recuerda la IP y puerto
+// modificando los valores de SERVER_DIRECCION y SERVER_PUERTO
+// en el próximo inicio intentará conectar automáticamente
+//     0==FALSE
+//     1==TRUE
+RECORDAR_ULTIMA_CONEXION=TRUE
+
+// materia dictada por el profesor (char[1000]):
+MATERIA_PROFESOR=

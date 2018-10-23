@@ -1,0 +1,28 @@
+// Archivo de configuración
+// los valores se toman desde el caracter '=' hasta el salto de linea
+// toda linea que comienza con // es ignorada
+// ------------------------
+
+// modo de ejecución (int):
+//     0==RELEASE
+//     1==DEBUG
+// en modo DEBUG se emiten mensajes de estado
+// en modo RELEASE únicamente mensajes de error
+MODO_EJECUCION=DEBUG
+
+// path archivo de notas (char[1000]):
+ARCHIVO_NOTAS=./inputs/notas.txt
+
+// mostrar ayuda en pantalla al iniciar (int <0||1>):
+//     0==FALSE
+//     1==TRUE
+MOSTRAR_AYUDA=TRUE
+
+// (int) puerto utilizado por el socket
+// debe ser mayor a 1024 y menor a 65536
+// por seguridad se recomienda usar valores altos
+SOCKET_PUERTO=55445
+
+// (int > 0) cantidad máxima de clientes
+// que se pueden conectar de forma simultánea
+CANTIDAD_CLIENTES_MAXIMA=10
