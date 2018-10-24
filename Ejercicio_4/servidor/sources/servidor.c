@@ -4,6 +4,7 @@
 #include "../headers/configuracion.h"
 #include "../headers/notas.h"
 
+// TODO: atrapar SIGTERM y el otro SIG para cerrar los puertos (servidor y clientes)
 // TODO: Compila sin errores con el script entregado
 // TODO: Funciona correctamente según enunciado
 // TODO: Existe algún tipo de ayuda para la ejecución del proceso
@@ -19,9 +20,6 @@
 int main()
 {
     int estado; // guarda el estado de las funciones
-
-    // información sobre el ejercicio
-    mostrar_firma();
 
     // valores de configuración general
     Configuracion configuracion;
@@ -90,31 +88,6 @@ int main()
     }
 
     return 0;
-}
-
-/*
-    ver servidor.h
-*/
-void mostrar_firma(void)
-{
-    // firma del ejercicio
-    char *mensaje_forma =
-        "Sistemas Operativos\n"
-        "-------------------\n"
-        "Trabajo Práctico N°3\n"
-        "Ejercicio 4\n"
-        "Script: ./run\n"
-        "-------------------\n"
-        "Integrantes:\n"
-        "   Avila, Leandro - 35.537.983\n"
-        "   Di Lorenzo, Maximiliano - 38.166.442\n"
-        "   Lorenz, Lautaro - 37.661.245\n"
-        "   Mercado, Maximiliano - 37.250.369\n"
-        "   Sequeira, Eliana - 39.061.003\n"
-        "----------------------------\n"
-        "\n";
-
-    printf("%s", mensaje_forma);
 }
 
 /*
