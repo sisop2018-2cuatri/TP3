@@ -123,6 +123,9 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
     // inicializar modo de ejecución
     G_MODO_EJECUCION = modo_ejecucion;
 
+    // Mostrar datos de conexión
+    printf("Servidor IP [%s] PUERTO [%d]\n", inet_ntoa(servidor.sin_addr), puerto);
+
     return 1; // conexión inicializada correctamente
 }
 

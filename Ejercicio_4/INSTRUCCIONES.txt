@@ -1,0 +1,21 @@
+Instrucciones
+-------------
+
+1) Crear ejecutables cliente y servidor:
+    a) En una terminal situarse en el directorio "./Ejercicio_4"
+    b) Ejecutar comando "make" para generar los binarios
+
+2) Iniciar servidor:
+    a) En una terminal ingresar al directorio "./Ejercicio_4/servidor"
+    b) Ejecutar "./servidor" en la terminal
+
+3) Iniciar cliente (repetir para cada cliente): 
+    a) En una terminal ingresar al directorio "./Ejercicio_4/cliente"
+    b) Ejecutar "./cliente" en la terminal
+
+CONFIGURACIÓN: 
+    Tanto el cliente como el servidor, cuentan con 
+    un archivo de configuración situado en 
+    "./Ejercicio_4/cliente/inputs/configuracion.txt" y
+    "./Ejercicio_4/servidor/inputs/configuracion.txt"
+    Los archivos de configuración se cargan durante la inicialización

@@ -16,10 +16,10 @@ MODO_EJECUCION=DEBUG
 MOSTRAR_AYUDA=TRUE
 
 // dirección del servidor (char[1000]):
-SERVER_DIRECCION=
+SERVER_DIRECCION=0.0.0.0
 
 // (int) puerto de conexión al socket del servidor:
-SERVER_PUERTO=
+SERVER_PUERTO=55445
 
 // si se puede conectar, recuerda la IP y puerto
 // modificando los valores de SERVER_DIRECCION y SERVER_PUERTO
@@ -29,4 +29,4 @@ SERVER_PUERTO=
 RECORDAR_ULTIMA_CONEXION=TRUE
 
 // materia dictada por el profesor (char[1000]):
-MATERIA_PROFESOR=
+MATERIA_PROFESOR=arquitectura

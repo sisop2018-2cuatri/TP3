@@ -1,10 +1,10 @@
-all: ./binarios/cliente ./binarios/servidor
+all: ./cliente/cliente ./servidor/servidor
 
-./binarios/cliente: ./cliente/objects/cliente.o ./cliente/objects/configuracion.o ./cliente/objects/conexion.o
-	gcc ./cliente/objects/cliente.o ./cliente/objects/configuracion.o ./cliente/objects/conexion.o -o ./binarios/cliente
+./cliente/cliente: ./cliente/objects/cliente.o ./cliente/objects/configuracion.o ./cliente/objects/conexion.o
+	gcc ./cliente/objects/cliente.o ./cliente/objects/configuracion.o ./cliente/objects/conexion.o -o ./cliente/cliente
 
-./binarios/servidor: ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o
-	gcc ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o -o ./binarios/servidor 
+./servidor/servidor: ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o
+	gcc ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o -o ./servidor/servidor 
 
 ./servidor/objects/conexion.o: ./servidor/sources/conexion.c 
 	gcc -c ./servidor/sources/conexion.c -o ./servidor/objects/conexion.o
