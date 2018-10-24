@@ -8,7 +8,7 @@ R_CLN = src/cliente
 all: servidor cliente
 
 install: 
-	$(shell ./.install.sh)
+	$(shell ./install.sh)
 
 servidor: servidor.o protocol.o string_utils.o
 	gcc $(C_INC) obj/servidor.o obj/protocol.o obj/string_utils.o -o bin/servidor -lrt
