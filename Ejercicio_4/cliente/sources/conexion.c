@@ -27,6 +27,7 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         // si la materia está vacia ú ocurrió un error de conexión 4
         if (strlen(materia) == 0 || estado != -1)
         {
+            // FIXME: la materia no puede contener comas
             printf("Ingrese la materia a la que pertenece: ");
             fflush(stdin);
             scanf("%s", materia);

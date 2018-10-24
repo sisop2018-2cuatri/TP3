@@ -141,8 +141,69 @@ void cargar_nueva_nota(void)
 */
 void obtener_promedio_materia(void)
 {
-    printf("obtener promedio materia\n");
-    // TODO:
+    int estado;           // estado de la respuesta
+    char mensaje[1024];   // mensaje que se envia al servidor
+    char respuesta[1024]; // respuesta del servidor
+    int c_buffer;         // para limpiar el buffer del teclado
+    int dni;              // dni del alumno
+
+    printf("obtener promedio de la materia del alumno (dni): \n");
+    while (scanf("%i", &dni) != 1)
+    {
+        printf("ERROR: dni no aceptado\n");
+        while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
+        {
+            // limpiar buffer
+        }
+        printf("Ingrese dni del alumno: ");
+    }
+    while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
+    {
+        // limpiar buffer
+    }
+
+    if (configuracion.modo_ejecucion == DEBUG)
+    {
+        printf("dni ingresado [%d]\n", dni);
+    }
+
+    // asignar valores al mensaje
+    mensaje[0] = '\0';
+    sprintf(mensaje, "get_promedio,%d,%s", dni, configuracion.materia_profesor);
+
+    // hacer solicitud al servidor
+    respuesta[0] = '\0';
+    estado = enviar_mensaje(mensaje, respuesta);
+    if (estado != 1)
+    {
+        if (estado == 2)
+        {
+            printf("ERROR: no se pudo enviar la solicitud al servidor\n");
+        }
+        else if (estado == 3)
+        {
+            printf("ERROR: no se pudo recibir respuesta del servidor\n");
+        }
+    }
+    else
+    {
+        // TODO: seguir desde acá
+        /*if (strcmp(respuesta, "0.00") == 0)
+        {
+            printf("El alumno no rindió ninguna materia\n");
+        }
+        else if (strcmp(respuesta, "-1") == 0)
+        {
+            printf("ERROR: no se pudo obtener promedio general del alumno\n");
+        }
+        else
+        {
+            printf("El promedio general del alumno es [%s]\n", respuesta);
+        }*/
+    }
+
+    printf("presione enter para continuar...\n");
+    getchar();
 }
 
 /*
