@@ -1,3 +1,13 @@
+
+/*
+ *EJERCICIO 5
+ *Git: https://github.com/sisop2018-2cuatri/TP3/Ejercicio_5
+ *Programa: servidor.c
+ *Descripcion: Genera memoria compartida y administra la db segun los mensajes que se pasen por esta
+ *Autor: maximiliano-rdl
+ *Fecha: 24/11/2018
+ * */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/shm.h>
