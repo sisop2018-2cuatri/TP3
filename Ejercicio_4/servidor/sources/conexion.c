@@ -1,4 +1,4 @@
-#include <stdio.h> // FIXME: usar en modo debugg
+#include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -28,6 +28,112 @@ int G_MODO_EJECUCION;        // modo de ejecución del server
 void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *solicitud);
 
 /*
+    Parsea una solicitud
+    --------------------
+    en base a la solicitud obtiene el método que se debe ejecutar
+    y sus respectivos parámetros de ejecución.
+    Parámetros:
+        s: solicitud que debe ser parseada
+        m: método que fue solicitado para ejecutar en el servidor
+        p1-4: parámetro del 1 al 4, según el método
+    Retorna:
+        mayor igual a 0: cantidad de parámetros encontrados (pueden ser cero)
+        -1: si no se encuntra el método
+*/
+int parserar_solicitud(char *s, char *m, char *p1, char *p2, char *p3, char *p4);
+
+/*
+    ver conexion.c
+*/
+int parserar_solicitud(char *s, char *m, char *p1, char *p2, char *p3, char *p4)
+{
+    int cantidad_parametros = 0; // cantidad de parámetros encontrados
+    char *p_aux = s;             // puntero auxiliar
+    int i = 0;                   // indice auxiliar
+
+    m[0] = '\0';  // inicilizar método
+    p1[0] = '\0'; // inicilizar parámetro 1
+    p2[0] = '\0'; // inicilizar parámetro 2
+    p3[0] = '\0'; // inicilizar parámetro 3
+    p4[0] = '\0'; // inicilizar parámetro 4
+
+    // obtener método
+    while (*p_aux != '\0' && *p_aux != '\n' && *p_aux != ',')
+    {
+        m[i] = *p_aux;
+        p_aux++;
+        i++;
+    }
+    m[i] = '\0';
+
+    // si no hay método para ejecutar en la solicitud
+    if (strlen(m) == 0)
+    {
+        return -1; // método no encontrado
+    }
+
+    // obtener parámetros del uno al cuatro
+    while (*p_aux != '\0' && *p_aux != '\n')
+    {
+        // si encontramos un nuevo parámetro
+        // podemos almacenar hasta 4 parámetros
+        if (*p_aux == ',' && cantidad_parametros < 4)
+        {
+            p_aux++;
+            i = 0;
+            while (*p_aux != '\0' && *p_aux != '\n' && *p_aux != ',')
+            {
+                // según la cantidad de parámetros parseados
+                // sabemos cuál estamos parseando
+                switch (cantidad_parametros)
+                {
+                case 0:
+                    p1[i] = *p_aux;
+                    break;
+                case 1:
+                    p2[i] = *p_aux;
+                    break;
+                case 2:
+                    p3[i] = *p_aux;
+                    break;
+                case 3:
+                    p4[i] = *p_aux;
+                    break;
+                }
+                p_aux++;
+                i++;
+            }
+            // según la cantidad de parámetros parseados
+            // sabemos cuál estamos parseando
+            switch (cantidad_parametros)
+            {
+            case 0:
+                p1[i] = '\0';
+                break;
+            case 1:
+                p2[i] = '\0';
+                break;
+            case 2:
+                p3[i] = '\0';
+                break;
+            case 3:
+                p4[i] = '\0';
+                break;
+            }
+
+            // contabilizar parámetro parseado
+            cantidad_parametros++;
+        }
+        else
+        {
+            break; // no hay más parámetros para parsear
+        }
+    }
+
+    return cantidad_parametros;
+}
+
+/*
     ver conexion.c
 */
 void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *solicitud)
@@ -37,140 +143,94 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
     char parametro_2[231];   // parámetro 2, varia según la solicitud
     char parametro_3[231];   // parámetro 3, varia según la solicitud
     char parametro_4[231];   // parámetro 4, varia según la solicitud
-    char *p_ini = solicitud; // puntero auxiliar
-    int i;                   // indice auxiliar
     char respuesta[1024];    // respuesta para emitir al cliente
-    int parametros_todos;    // uno si están los parámetros necesarios
+    int cantidad_parametros; // cantidad de parámetros parseados
+    int validar_parametros;  // la cantidad de parámetros parseados es correcta
 
-    respuesta[0] = '\0';  // inicializar respuesta
-    metodo[0] = '\0';     // inicilizar método
-    parametros_todos = 0; // si están todos los parámetros vale uno
+    respuesta[0] = '\0';    // inicializar respuesta
+    validar_parametros = 0; // vale uno si están todos los parámetros necesarios
 
-    // leer que método fue solicitado
-    i = 0;
-    while (*p_ini != '\0' && *p_ini != '\n' && *p_ini != ',')
+    // parsear solicitud
+    cantidad_parametros = parserar_solicitud(solicitud,
+                                             metodo,
+                                             parametro_1,
+                                             parametro_2,
+                                             parametro_3,
+                                             parametro_4);
+    if (cantidad_parametros == -1)
     {
-        metodo[i] = *p_ini;
-        p_ini++;
-        i++;
+        printf("[%s] ERROR: solicitud sin método\n", inet_ntoa(s_cliente.sin_addr));
     }
-    metodo[i] = '\0';
-
-    if (G_MODO_EJECUCION == DEBUG)
-    {
-        printf("[%s] intenta ejecutar [%s]\n", inet_ntoa(s_cliente.sin_addr), metodo);
-    }
-
-    // Ejecutar una acción según el método
-    if (strcmp(metodo, "get_promedio_general") == 0)
-    {
-        // MÉTODO get_promedio_general
-        // parametro_1: DNI
-        // -----------------------------------------
-        if (*p_ini != ',')
-        {
-            // ERROR: parámetro "dni" no encontrado
-            sprintf(respuesta, "%s", "-1");
-        }
-        else
-        {
-            p_ini++;
-            i = 0;
-            while (*p_ini != '\0' && *p_ini != '\n' && *p_ini != ',')
-            {
-                parametro_1[i] = *p_ini;
-                p_ini++;
-                i++;
-            }
-            parametro_1[i] = '\0';
-
-            parametros_todos = 1;
-        }
-
-        // si estan todos los parámetros
-        if (parametros_todos)
-        {
-            // obtener promedio general según el dni
-            sprintf(respuesta, "%.2f", get_promedio_general(atoi(parametro_1)));
-
-            if (G_MODO_EJECUCION == DEBUG)
-            {
-                printf("[%s] promedio general de [%s] es [%s]\n",
-                       inet_ntoa(s_cliente.sin_addr),
-                       parametro_1,
-                       respuesta);
-            }
-        }
-    }
-    else if (strcmp(metodo, "get_promedio") == 0)
-    {
-        // MÉTODO get_promedio
-        // parametro_1: DNI
-        // parametro_2: MATERIA
-        // -----------------------------------------
-        if (*p_ini != ',')
-        {
-            // ERROR: parámetro "dni" no encontrado
-            sprintf(respuesta, "%s", "-1");
-        }
-        else
-        {
-            p_ini++;
-            i = 0;
-            while (*p_ini != '\0' && *p_ini != '\n' && *p_ini != ',')
-            {
-                parametro_1[i] = *p_ini;
-                p_ini++;
-                i++;
-            }
-            parametro_1[i] = '\0';
-        }
-
-        if (*p_ini != ',')
-        {
-            // ERROR: parámetro "materia" no encontrado
-            sprintf(respuesta, "%s", "-1");
-        }
-        else
-        {
-            p_ini++;
-            i = 0;
-            while (*p_ini != '\0' && *p_ini != '\n' && *p_ini != ',')
-            {
-                parametro_2[i] = *p_ini;
-                p_ini++;
-                i++;
-            }
-            parametro_2[i] = '\0';
-
-            parametros_todos = 1;
-        }
-
-        // si estan todos los parámetros
-        if (parametros_todos)
-        {
-            // obtener promedio general según el dni
-            sprintf(respuesta, "%.2f", get_promedio(atoi(parametro_1), parametro_2));
-
-            if (G_MODO_EJECUCION == DEBUG)
-            {
-                printf("[%s] promedio de [%s] en materia [%s] es [%s]\n",
-                       inet_ntoa(s_cliente.sin_addr),
-                       parametro_1,
-                       parametro_2,
-                       respuesta);
-            }
-        }
-    }
-
-    // si no se recibieron todos los parametros necesarios
-    if (!parametros_todos)
+    else
     {
         if (G_MODO_EJECUCION == DEBUG)
         {
-            printf("[%s] ERROR: no se pudo ejecutar [%s] faltan parámetros\n",
+            printf("[%s] método [%s]\n",
                    inet_ntoa(s_cliente.sin_addr),
                    metodo);
+            printf("[%s] parámetros [%s] [%s] [%s] [%s]\n",
+                   inet_ntoa(s_cliente.sin_addr),
+                   parametro_1,
+                   parametro_2,
+                   parametro_3,
+                   parametro_4);
+        }
+
+        // ejecución del método solicitado
+        // -------------------------------
+
+        if (strcmp(metodo, "get_promedio_general") == 0)
+        {
+            // parametro_1 == DNI
+            if (cantidad_parametros == 1)
+            {
+                // obtener promedio general según el dni
+                sprintf(respuesta, "%.2f", get_promedio_general(atoi(parametro_1)));
+
+                if (G_MODO_EJECUCION == DEBUG)
+                {
+                    printf("[%s] promedio general de [%s] es [%s]\n",
+                           inet_ntoa(s_cliente.sin_addr),
+                           parametro_1,
+                           respuesta);
+                }
+
+                // están todos los parámetros necesarios
+                validar_parametros = 1;
+            }
+        }
+        else if (strcmp(metodo, "get_promedio") == 0)
+        {
+            // parametro_1 == DNI
+            // parametro_2 == MATERIA
+            if (cantidad_parametros == 2)
+            {
+                // obtener promedio de la materia según el dni
+                sprintf(respuesta, "%.2f", get_promedio(atoi(parametro_1), parametro_2));
+
+                if (G_MODO_EJECUCION == DEBUG)
+                {
+                    printf("[%s] promedio de [%s] en materia [%s] es [%s]\n",
+                           inet_ntoa(s_cliente.sin_addr),
+                           parametro_1,
+                           parametro_2,
+                           respuesta);
+                }
+
+                // están todos los parámetros necesarios
+                validar_parametros = 1;
+            }
+        }
+
+        // si no se recibieron todos los parametros necesarios
+        if (!validar_parametros)
+        {
+            if (G_MODO_EJECUCION == DEBUG)
+            {
+                printf("[%s] ERROR: no se pudo ejecutar [%s] faltan parámetros\n",
+                       inet_ntoa(s_cliente.sin_addr),
+                       metodo);
+            }
         }
     }
 

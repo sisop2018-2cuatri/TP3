@@ -17,5 +17,5 @@ CONFIGURACIÓN:
     Tanto el cliente como el servidor, cuentan con 
     un archivo de configuración situado en 
     "./Ejercicio_4/cliente/inputs/configuracion.txt" y
-    "./Ejercicio_4/servidor/inputs/configuracion.txt"
+    "./Ejercicio_4/servidor/inputs/configuracion.txt" respectivamente
     Los archivos de configuración se cargan durante la inicialización
