@@ -29,4 +29,4 @@ SERVER_PUERTO=55445
 RECORDAR_ULTIMA_CONEXION=TRUE
 
 // materia dictada por el profesor (char[1000]):
-MATERIA_PROFESOR=arquitectura
+MATERIA_PROFESOR=salsa

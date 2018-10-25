@@ -16,6 +16,7 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
 {
     int estado = -1;     // estado de la conexión
     char str_puerto[12]; // valor del puerto como string
+    int c_buffer;        // para limpiar el flujo de entrada
 
     // cerrar la conexión por si ya fue inicializada previamente
     finalizar_conexion();
@@ -27,10 +28,23 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         // si la materia está vacia ú ocurrió un error de conexión 4
         if (strlen(materia) == 0)
         {
-            // FIXME: la materia no puede contener comas
-            printf("Ingrese la materia a la que pertenece: ");
-            fflush(stdin);
-            scanf("%s", materia);
+            do
+            {
+                printf("Ingrese la materia a la que pertenece: ");
+                fflush(stdin);
+                scanf("%[^\n]s", materia);
+
+                while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
+                {
+                    // limpiar buffer
+                }
+
+                // la materia no puede contener comas
+                if (strchr(materia, ','))
+                {
+                    printf("ERROR: la materia no puede contener coma (,)\n");
+                }
+            } while (strchr(materia, ','));
         }
 
         // si la dirección es vacía ú ocurrió un error de conexión
@@ -44,17 +58,20 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         // si el puerto es incorrecto ú ocurrió un error de conexión
         if (socket_puerto <= 1024 || socket_puerto > 65535 || estado != -1)
         {
-            do
+            printf("Ingrese el puerto de conexión: ");
+            while (scanf("%i", &socket_puerto) != 1 || socket_puerto <= 1024 || socket_puerto > 65535)
             {
-                printf("Ingrese el puerto de conexión: ");
-                fflush(stdin);
-                scanf("%d", &socket_puerto);
-
-                if (socket_puerto <= 1024 || socket_puerto > 65535)
+                printf("\nERROR: el puerto debe ser mayor a 1024 y menor a 65536\n");
+                while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
                 {
-                    printf("\nERROR: el puerto debe ser mayor a 1024 y menor a 65536\n");
+                    // limpiar buffer
                 }
-            } while (socket_puerto <= 1024 || socket_puerto > 65535);
+                printf("Ingrese el puerto de conexión: ");
+            }
+            while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
+            {
+                // limpiar buffer
+            }
         }
 
         // si al finalizar es distinto de 1, ocurrió un error

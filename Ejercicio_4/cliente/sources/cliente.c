@@ -147,7 +147,7 @@ void obtener_promedio_materia(void)
     int c_buffer;         // para limpiar el buffer del teclado
     int dni;              // dni del alumno
 
-    printf("obtener promedio de la materia del alumno (dni): \n");
+    printf("obtener promedio de la materia del alumno (dni): ");
     while (scanf("%i", &dni) != 1)
     {
         printf("ERROR: dni no aceptado\n");
@@ -160,11 +160,6 @@ void obtener_promedio_materia(void)
     while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
     {
         // limpiar buffer
-    }
-
-    if (configuracion.modo_ejecucion == DEBUG)
-    {
-        printf("dni ingresado [%d]\n", dni);
     }
 
     // asignar valores al mensaje
@@ -187,19 +182,20 @@ void obtener_promedio_materia(void)
     }
     else
     {
-        // TODO: seguir desde acá
-        /*if (strcmp(respuesta, "0.00") == 0)
+        if (strcmp(respuesta, "0.00") == 0)
         {
-            printf("El alumno no rindió ninguna materia\n");
+            printf("El alumno no rindió la materia [%s]\n", configuracion.materia_profesor);
         }
         else if (strcmp(respuesta, "-1") == 0)
         {
-            printf("ERROR: no se pudo obtener promedio general del alumno\n");
+            printf("ERROR: no se pudo obtener promedio del alumno\n");
         }
         else
         {
-            printf("El promedio general del alumno es [%s]\n", respuesta);
-        }*/
+            printf("alumno [%d]\n", dni);
+            printf("materia [%s]\n", configuracion.materia_profesor);
+            printf("promedio [%s]\n", respuesta);
+        }
     }
 
     printf("presione enter para continuar...\n");
@@ -232,11 +228,6 @@ void obtener_promedio_general(void)
         // limpiar buffer
     }
 
-    if (configuracion.modo_ejecucion == DEBUG)
-    {
-        printf("dni ingresado [%d]\n", dni);
-    }
-
     // asignar valores al mensaje
     mensaje[0] = '\0';
     sprintf(mensaje, "get_promedio_general,%d", dni);
@@ -267,7 +258,8 @@ void obtener_promedio_general(void)
         }
         else
         {
-            printf("El promedio general del alumno es [%s]\n", respuesta);
+            printf("alumno [%d]\n", dni);
+            printf("promedio general [%s]\n", respuesta);
         }
     }
 

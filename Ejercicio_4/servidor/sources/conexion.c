@@ -18,27 +18,33 @@ int G_MODO_EJECUCION;        // modo de ejecución del server
     Define que acciones tomar en el servidor según la 
     solicitud recibida desde el cliente.
     Parámetros:
+        s_cliente: structura de conexión con el cliente
         cliente_socket: socket a traves del cuál se recibe la solicitud
         solicitud: mensaje recibido desde el cliente
     Output:
         Un valor según el origen de la solicitud, el cuál
         debe ser interpretado por el cliente.
 */
-void procesar_solicitud(int cliente_socket, char *solicitud);
+void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *solicitud);
 
 /*
     ver conexion.c
 */
-void procesar_solicitud(int cliente_socket, char *solicitud)
+void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *solicitud)
 {
     char metodo[100];        // acción para ejecutar en el servidor
-    char parametro_uno[100]; // primer parametro, varia según la solicitud
+    char parametro_1[231];   // parámetro 1, varia según la solicitud
+    char parametro_2[231];   // parámetro 2, varia según la solicitud
+    char parametro_3[231];   // parámetro 3, varia según la solicitud
+    char parametro_4[231];   // parámetro 4, varia según la solicitud
     char *p_ini = solicitud; // puntero auxiliar
     int i;                   // indice auxiliar
     char respuesta[1024];    // respuesta para emitir al cliente
+    int parametros_todos;    // uno si están los parámetros necesarios
 
-    respuesta[0] = '\0'; // inicializar respuesta
-    metodo[0] = '\0';    // inicilizar metodo
+    respuesta[0] = '\0';  // inicializar respuesta
+    metodo[0] = '\0';     // inicilizar método
+    parametros_todos = 0; // si están todos los parámetros vale uno
 
     // leer que método fue solicitado
     i = 0;
@@ -52,42 +58,124 @@ void procesar_solicitud(int cliente_socket, char *solicitud)
 
     if (G_MODO_EJECUCION == DEBUG)
     {
-        printf("ejecutar [%s] en el servidor\n", metodo);
+        printf("[%s] intenta ejecutar [%s]\n", inet_ntoa(s_cliente.sin_addr), metodo);
     }
 
     // Ejecutar una acción según el método
     if (strcmp(metodo, "get_promedio_general") == 0)
     {
-        // el primer parámetro debería ser el dni
-        if (*p_ini == ',')
+        // MÉTODO get_promedio_general
+        // parametro_1: DNI
+        // -----------------------------------------
+        if (*p_ini != ',')
         {
-            p_ini++;
-            i = 0;
-            while (*p_ini != '\0' && *p_ini != '\n')
-            {
-                parametro_uno[i] = *p_ini;
-                p_ini++;
-                i++;
-            }
-            parametro_uno[i] = '\0';
-
-            // obtener promedio general según el dni
-            sprintf(respuesta, "%.2f", get_promedio_general(atoi(parametro_uno)));
+            // ERROR: parámetro "dni" no encontrado
+            sprintf(respuesta, "%s", "-1");
         }
         else
         {
-            // ERROR: parámetro dni no encontrado
+            p_ini++;
+            i = 0;
+            while (*p_ini != '\0' && *p_ini != '\n' && *p_ini != ',')
+            {
+                parametro_1[i] = *p_ini;
+                p_ini++;
+                i++;
+            }
+            parametro_1[i] = '\0';
+
+            parametros_todos = 1;
+        }
+
+        // si estan todos los parámetros
+        if (parametros_todos)
+        {
+            // obtener promedio general según el dni
+            sprintf(respuesta, "%.2f", get_promedio_general(atoi(parametro_1)));
+
+            if (G_MODO_EJECUCION == DEBUG)
+            {
+                printf("[%s] promedio general de [%s] es [%s]\n",
+                       inet_ntoa(s_cliente.sin_addr),
+                       parametro_1,
+                       respuesta);
+            }
+        }
+    }
+    else if (strcmp(metodo, "get_promedio") == 0)
+    {
+        // MÉTODO get_promedio
+        // parametro_1: DNI
+        // parametro_2: MATERIA
+        // -----------------------------------------
+        if (*p_ini != ',')
+        {
+            // ERROR: parámetro "dni" no encontrado
             sprintf(respuesta, "%s", "-1");
         }
-
-        if (G_MODO_EJECUCION == DEBUG)
+        else
         {
-            printf("el promedio general de [%s] es [%s]\n", parametro_uno, respuesta);
+            p_ini++;
+            i = 0;
+            while (*p_ini != '\0' && *p_ini != '\n' && *p_ini != ',')
+            {
+                parametro_1[i] = *p_ini;
+                p_ini++;
+                i++;
+            }
+            parametro_1[i] = '\0';
         }
 
-        // enviar mensaje de respuesta al cliente
-        write(cliente_socket, respuesta, strlen(respuesta));
+        if (*p_ini != ',')
+        {
+            // ERROR: parámetro "materia" no encontrado
+            sprintf(respuesta, "%s", "-1");
+        }
+        else
+        {
+            p_ini++;
+            i = 0;
+            while (*p_ini != '\0' && *p_ini != '\n' && *p_ini != ',')
+            {
+                parametro_2[i] = *p_ini;
+                p_ini++;
+                i++;
+            }
+            parametro_2[i] = '\0';
+
+            parametros_todos = 1;
+        }
+
+        // si estan todos los parámetros
+        if (parametros_todos)
+        {
+            // obtener promedio general según el dni
+            sprintf(respuesta, "%.2f", get_promedio(atoi(parametro_1), parametro_2));
+
+            if (G_MODO_EJECUCION == DEBUG)
+            {
+                printf("[%s] promedio de [%s] en materia [%s] es [%s]\n",
+                       inet_ntoa(s_cliente.sin_addr),
+                       parametro_1,
+                       parametro_2,
+                       respuesta);
+            }
+        }
     }
+
+    // si no se recibieron todos los parametros necesarios
+    if (!parametros_todos)
+    {
+        if (G_MODO_EJECUCION == DEBUG)
+        {
+            printf("[%s] ERROR: no se pudo ejecutar [%s] faltan parámetros\n",
+                   inet_ntoa(s_cliente.sin_addr),
+                   metodo);
+        }
+    }
+
+    // enviar mensaje de respuesta al cliente
+    write(cliente_socket, respuesta, strlen(respuesta));
 }
 
 /*
@@ -164,11 +252,11 @@ void atender_solicitudes()
 
                 if (G_MODO_EJECUCION == DEBUG)
                 {
-                    printf("recibe [%s] desde [%s]\n", cliente_mensaje, inet_ntoa(s_cliente.sin_addr));
+                    printf("[%s] solicita [%s]\n", inet_ntoa(s_cliente.sin_addr), cliente_mensaje);
                 }
 
                 // ejecutar una función según la solicitud del cliente
-                procesar_solicitud(cliente_socket, cliente_mensaje);
+                procesar_solicitud(s_cliente, cliente_socket, cliente_mensaje);
             }
 
             if (tam_mensaje == 0)
