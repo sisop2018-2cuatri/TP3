@@ -21,7 +21,7 @@ int G_MODO_EJECUCION;        // modo de ejecución del server
         s_cliente: structura de conexión con el cliente
         cliente_socket: socket a traves del cuál se recibe la solicitud
         solicitud: mensaje recibido desde el cliente
-    Output:
+    Salida:
         Un valor según el origen de la solicitud, el cuál
         debe ser interpretado por el cliente.
 */
@@ -214,6 +214,37 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
                            inet_ntoa(s_cliente.sin_addr),
                            parametro_1,
                            parametro_2,
+                           respuesta);
+                }
+
+                // están todos los parámetros necesarios
+                validar_parametros = 1;
+            }
+        }
+        else if (strcmp(metodo, "cargar_nota") == 0)
+        {
+            // parametro_1 == DNI
+            // parametro_2 == MATERIA
+            // parametro_3 == TIPO_EVALUACION
+            // parametro_4 == NOTA
+            if (cantidad_parametros == 4)
+            {
+                // cargar nota
+                sprintf(respuesta,
+                        "%d",
+                        cargar_nota(atoi(parametro_1),
+                                    parametro_2,
+                                    atoi(parametro_3),
+                                    atof(parametro_4)));
+
+                if (G_MODO_EJECUCION == DEBUG)
+                {
+                    printf("[%s] cargar nota a dni [%s] materia [%s] evaluación [%s] nota [%s] estado [%s]\n",
+                           inet_ntoa(s_cliente.sin_addr),
+                           parametro_1,
+                           parametro_2,
+                           parametro_3,
+                           parametro_4,
                            respuesta);
                 }
 

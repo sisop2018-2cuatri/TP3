@@ -21,7 +21,7 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
     ----------------------------------------------
     manejador de conexiones de clientes
     la concurrencia de conexiones se maneja con threads 
-    Output:
+    Salida:
         muestra en pantalla los mensajes de las solicitudes   
 */
 void atender_solicitudes();

@@ -70,7 +70,7 @@ int cargar_nota(int dni, char *materia, enum TIPOS_EVALUACION evaluacion, float 
                 retorna la sumatoria de ambas entre dos
             3 notas: 
                 retorna la sumatoria de las dos mayores entre dos
-    Parametros:
+    Parámetros:
         dni: del alumno del cual se consulta el promedio
         materia: nombre de la materia de la cual corresponde el promedio
     Retorna:
@@ -86,7 +86,7 @@ float get_promedio(int dni, char *materia);
     Algoritmo de cálculo:
         se obtiene la sumatoria de promedios entre todas las materias
         rendidas y se divide entre la cantidad de materias rendidas.
-    Parametros:
+    Parámetros:
         dni: del alumno del cual se consulta el promedio general
     Retorna:
         mayor a 0: promedio general del alumno

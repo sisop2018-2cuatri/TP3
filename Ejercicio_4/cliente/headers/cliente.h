@@ -13,14 +13,26 @@ void mostrar_menu(void);
 //  ====================================
 
 /*
-    cargar nueva nota para un alumno
-    // TODO: documentar apropiadamente
+    Cargar nueva nota para un alumno
+    --------------------------------
+    Solicita al usuario los datos para cargar
+    una nueva nota a un alumno.
+    Salida:
+        se muestra en pantalla un estado
+        según la respuesta del servidor o en caso de fallo
+        se mostrará un mensaje de error
 */
 void cargar_nueva_nota(void);
 
 /*
     Obtener promedio del alumno en la materia
-    // TODO: documentar apropiadamente
+    -----------------------------------------
+    Consulta en el servidor el promedio del alumno
+    en la materia con la cual se registro el usuario
+    en la sesión acual.
+    Salida:
+        se muestra en pantalla el promedio del alumno
+        en la materia, o un mensaje de error en caso de fallo
 */
 void obtener_promedio_materia(void);
 

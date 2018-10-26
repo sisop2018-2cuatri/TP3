@@ -198,6 +198,9 @@ int insertar(Lista *lista, t_registro registro)
     return 1;
 }
 
+/*
+    Borra un nodo de la lista de notas
+*/
 void borrar(Lista *lista, t_registro registro)
 {
     pNodo nodo;
@@ -246,6 +249,10 @@ void borrar(Lista *lista, t_registro registro)
     free(nodo);
 }
 
+/*
+    Liberar los recursos utilizados por la lista de notas
+    // TODO: utilizar al liberar el socket
+*/
 void vaciar_lista(Lista *lista)
 {
     pNodo nodo, actual;
