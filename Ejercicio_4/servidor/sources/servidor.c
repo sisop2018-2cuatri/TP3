@@ -7,10 +7,8 @@
 #include "../headers/configuracion.h"
 #include "../headers/notas.h"
 
-// TODO: Existe algún tipo de ayuda para la ejecución del proceso
 // TODO: No deja procesos zombies o huérfanos.
 // TODO: Funciona tanto localmente como a través de la red desde distintas máquinas
-// TODO: Utiliza sockets y threads
 // TODO: Maneja correctamente el cierre de los puertos al finalizar
 // TODO: Se conecta con nombre de máquinas
 // TODO: Soporta múltiples clientes (se probará con más de 5)

@@ -24,5 +24,5 @@ MOSTRAR_AYUDA=TRUE
 SOCKET_PUERTO=55444
 
 // (int > 0) cantidad máxima de clientes
-// que se pueden conectar de forma simultánea
+// que puede contener el buffer del socket servidor
 CANTIDAD_CLIENTES_MAXIMA=10

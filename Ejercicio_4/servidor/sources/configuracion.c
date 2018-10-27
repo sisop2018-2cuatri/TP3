@@ -35,7 +35,7 @@ void inicializar_archivo(FILE *f_config)
         "SOCKET_PUERTO=55444\n"
         "\n"
         "// (int > 0) cantidad máxima de clientes\n"
-        "// que se pueden conectar de forma simultánea\n"
+        "// que puede contener el buffer del socket servidor\n"
         "CANTIDAD_CLIENTES_MAXIMA=10\n"
         "";
 

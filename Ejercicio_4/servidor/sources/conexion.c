@@ -4,13 +4,59 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "../headers/conexion.h"
 #include "../headers/configuracion.h"
 #include "../headers/notas.h"
 
+typedef struct
+{
+    int sk;                 // cliente socket
+    struct sockaddr_in con; // configuración cliente
+} t_cliente;
+
+typedef struct
+{
+    int *numeros;
+    size_t usado;
+    size_t tam;
+} IntArray; // para manejo de array de int
+
 int socket_id;               // socket servidor
 struct sockaddr_in servidor; // configuración del socket servidor
 int G_MODO_EJECUCION;        // modo de ejecución del server
+IntArray sockets_cliente;    // sockets de los clientes que se conectan
+
+//  ========================================================
+//      funciones privadas:
+//      - manejo de hilos de conexión con los clientes
+//      - atención de solicitudes de los clientes
+//  ========================================================
+
+/*
+    Inicializa un array de enteros
+*/
+void inicializar_int_array(IntArray *a, size_t tam);
+
+/*
+    Agregar nuevo elemento a un array de enteros
+*/
+void int_array_poner(IntArray *a, int elemento);
+
+/*
+    Liberar los recursos de memoria utilizados
+    por un array de enteros
+*/
+void int_array_liberar(IntArray *a);
+
+/*
+    Acepta una conexión nueva de un cliente
+    ---------------------------------------
+    Cuando un cliente intenta conectarse con el servidor
+    se hace un llamado a esta función para procesar la 
+    atención de la nueva conexión.
+*/
+void *manejador_conexion(void *parametros);
 
 /*
     Procesa la solicitud recibida del cliente
@@ -41,6 +87,112 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
         -1: si no se encuntra el método
 */
 int parserar_solicitud(char *s, char *m, char *p1, char *p2, char *p3, char *p4);
+
+/*
+    ver conexion.c
+*/
+void inicializar_int_array(IntArray *a, size_t tam)
+{
+    a->numeros = (int *)malloc(tam * sizeof(int));
+    a->usado = 0;
+    a->tam = tam;
+}
+
+/*
+    ver conexion.c
+*/
+void int_array_poner(IntArray *a, int elemento)
+{
+    int i;
+
+    // si hay una posicion disponible que contiene -1, se puede usar
+    for (i = 0; i < a->usado; i++)
+    {
+        if (a->numeros[i] == -1)
+        {
+            // encontramos una posición disponible
+            a->numeros[i] = elemento;
+            return;
+        }
+    }
+
+    // si no usamos una posición nueva
+    if (a->usado == a->tam)
+    {
+        a->tam *= 2;
+        a->numeros = (int *)realloc(a->numeros, a->tam * sizeof(int));
+    }
+    a->numeros[a->usado++] = elemento;
+}
+
+/*
+    ver conexion.c
+*/
+void int_array_liberar(IntArray *a)
+{
+    free(a->numeros);
+    a->numeros = NULL;
+    a->usado = a->tam = 0;
+}
+
+/*
+    ver conexion.c
+*/
+void *manejador_conexion(void *parametros)
+{
+    int i;                      // uso general
+    int tam_mensaje;            // tamaño del mensaje del cliente
+    char cliente_mensaje[1024]; // longitud del mensaje cliente
+    t_cliente cliente = *(t_cliente *)parametros;
+
+    // mensajes de entrada desde el cliente
+    while ((tam_mensaje = recv(cliente.sk, cliente_mensaje, 1024, 0)) > 0)
+    {
+        // descartar todo lo que no es el mensaje del cliente
+        cliente_mensaje[tam_mensaje] = '\0';
+
+        if (G_MODO_EJECUCION == DEBUG)
+        {
+            printf("[%s][%d] solicita [%s]\n",
+                   inet_ntoa(cliente.con.sin_addr),
+                   cliente.sk,
+                   cliente_mensaje);
+        }
+
+        // ejecutar una función según la solicitud del cliente
+        procesar_solicitud(cliente.con, cliente.sk, cliente_mensaje);
+    }
+
+    if (tam_mensaje == 0)
+    {
+        // cliente desconectado
+        printf("conexión [%s][%d] terminada\n",
+               inet_ntoa(cliente.con.sin_addr),
+               cliente.sk);
+    }
+    else if (tam_mensaje <= -1)
+    {
+        // error en la conexión con el cliente
+        printf("[%s][%d] ERROR: conexión perdida\n",
+               inet_ntoa(cliente.con.sin_addr),
+               cliente.sk);
+    }
+
+    // marcarlo como socket liberado
+    for (i = 0; i < sockets_cliente.usado; i++)
+    {
+        if (sockets_cliente.numeros[i] == cliente.sk)
+        {
+            // posición disponible para otro cliente
+            sockets_cliente.numeros[i] = -1;
+
+            // conexión cliente terminada
+            close(cliente.sk);
+
+            break;
+        }
+    }
+}
 
 /*
     ver conexion.c
@@ -159,17 +311,21 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
                                              parametro_4);
     if (cantidad_parametros == -1)
     {
-        printf("[%s] ERROR: solicitud sin método\n", inet_ntoa(s_cliente.sin_addr));
+        printf("[%s][%d] ERROR: solicitud sin método\n",
+               inet_ntoa(s_cliente.sin_addr),
+               cliente_socket);
     }
     else
     {
         if (G_MODO_EJECUCION == DEBUG)
         {
-            printf("[%s] método [%s]\n",
+            printf("[%s][%d] método [%s]\n",
                    inet_ntoa(s_cliente.sin_addr),
+                   cliente_socket,
                    metodo);
-            printf("[%s] parámetros [%s] [%s] [%s] [%s]\n",
+            printf("[%s][%d] parámetros [%s] [%s] [%s] [%s]\n",
                    inet_ntoa(s_cliente.sin_addr),
+                   cliente_socket,
                    parametro_1,
                    parametro_2,
                    parametro_3,
@@ -189,8 +345,9 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
 
                 if (G_MODO_EJECUCION == DEBUG)
                 {
-                    printf("[%s] promedio general de [%s] es [%s]\n",
+                    printf("[%s][%d] promedio general de [%s] es [%s]\n",
                            inet_ntoa(s_cliente.sin_addr),
+                           cliente_socket,
                            parametro_1,
                            respuesta);
                 }
@@ -210,8 +367,9 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
 
                 if (G_MODO_EJECUCION == DEBUG)
                 {
-                    printf("[%s] promedio de [%s] en materia [%s] es [%s]\n",
+                    printf("[%s][%d] promedio de [%s] en materia [%s] es [%s]\n",
                            inet_ntoa(s_cliente.sin_addr),
+                           cliente_socket,
                            parametro_1,
                            parametro_2,
                            respuesta);
@@ -239,8 +397,9 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
 
                 if (G_MODO_EJECUCION == DEBUG)
                 {
-                    printf("[%s] cargar nota a dni [%s] materia [%s] evaluación [%s] nota [%s] estado [%s]\n",
+                    printf("[%s][%d] cargar nota a dni [%s] materia [%s] evaluación [%s] nota [%s] estado [%s]\n",
                            inet_ntoa(s_cliente.sin_addr),
+                           cliente_socket,
                            parametro_1,
                            parametro_2,
                            parametro_3,
@@ -258,8 +417,9 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
         {
             if (G_MODO_EJECUCION == DEBUG)
             {
-                printf("[%s] ERROR: no se pudo ejecutar [%s] faltan parámetros\n",
+                printf("[%s][%d] ERROR: no se pudo ejecutar [%s] faltan parámetros\n",
                        inet_ntoa(s_cliente.sin_addr),
+                       cliente_socket,
                        metodo);
             }
         }
@@ -268,6 +428,10 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
     // enviar mensaje de respuesta al cliente
     write(cliente_socket, respuesta, strlen(respuesta));
 }
+
+//  ========================================================
+//      funciones que pueden ser llamadas por el servidor
+//  ========================================================
 
 /*
     ver conexion.h
@@ -302,6 +466,11 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
     // inicializar modo de ejecución
     G_MODO_EJECUCION = modo_ejecucion;
 
+    // inicializar container con los sockets clientes
+    // ya que puede haber más clientes que cantidad_clientes_maxima (esto
+    // solo limita el buffer de entrada) se utiliza un array dinámico
+    inicializar_int_array(&sockets_cliente, cantidad_clientes_maxima);
+
     // Mostrar datos de conexión
     printf("\nServidor IP [%s] PUERTO [%d]\n", inet_ntoa(servidor.sin_addr), puerto);
 
@@ -311,59 +480,36 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
 /*
     ver conexion.h
 */
-void atender_solicitudes()
+void atender_solicitudes(void)
 {
-    int cliente_socket;           // cliente socket
-    int tam_cliente_struct;       // tamaño de la structura cliente
-    int tam_mensaje;              // tamaño del mensaje del cliente
-    struct sockaddr_in s_cliente; // configuración cliente
-    char cliente_mensaje[1024];   // longitud del mensaje cliente
+    int sk_cliente_tam;  // tamaño de la structura cliente
+    pthread_t thread_id; // thread para cada conexión cliente
+    t_cliente cliente;   // estructura cliente y socket cliente
 
-    // atender solicitudes indefinidamente
-    while (1)
+    // tamaño de la estructura de configuración del cliente
+    sk_cliente_tam = sizeof(struct sockaddr_in);
+
+    // atender solicitudes
+    while ((cliente.sk = accept(socket_id, (struct sockaddr *)&cliente.con, (socklen_t *)&sk_cliente_tam)))
     {
-        // TODO: usar un hilo por cliente
-        // tamaño de la estructura de configuración del cliente
-        tam_cliente_struct = sizeof(struct sockaddr_in);
-
-        // aceptar conexión del cliente
-        cliente_socket = accept(socket_id, (struct sockaddr *)&s_cliente, (socklen_t *)&tam_cliente_struct);
-        if (cliente_socket < 0)
+        if (cliente.sk < 0)
         {
-            printf("ERROR: al conectar con [%s]\n", inet_ntoa(s_cliente.sin_addr));
+            printf("ERROR: al conectar con [%s]\n", inet_ntoa(cliente.con.sin_addr));
         }
         else
         {
-            printf("conexión [%s] aceptada\n", inet_ntoa(s_cliente.sin_addr));
-            // mensajes de entrada desde el cliente
-            while ((tam_mensaje = recv(cliente_socket, cliente_mensaje, 1024, 0)) > 0)
+            printf("conexión [%s][%d] aceptada\n", inet_ntoa(cliente.con.sin_addr), cliente.sk);
+
+            // alamacenar identificador de socket cliente
+            int_array_poner(&sockets_cliente, cliente.sk);
+
+            // crear un thread de atención a la conexión con el cliente
+            if (pthread_create(&thread_id, NULL, manejador_conexion, (void *)&cliente) < 0)
             {
-                // descartar todo lo que no es el mensaje del cliente
-                cliente_mensaje[tam_mensaje] = '\0';
-
-                if (G_MODO_EJECUCION == DEBUG)
-                {
-                    printf("[%s] solicita [%s]\n", inet_ntoa(s_cliente.sin_addr), cliente_mensaje);
-                }
-
-                // ejecutar una función según la solicitud del cliente
-                procesar_solicitud(s_cliente, cliente_socket, cliente_mensaje);
+                printf("[%s][%d] ERROR: no se pudo crear thread de atención\n",
+                       inet_ntoa(cliente.con.sin_addr),
+                       cliente.sk);
             }
-
-            if (tam_mensaje == 0)
-            {
-                // TODO: atender
-                // cliente desconectado
-            }
-            else if (tam_mensaje == -1)
-            {
-                // TODO: atender
-                // error en la conexión con el cliente
-            }
-
-            // conexión cliente terminada
-            close(cliente_socket);
-            printf("conexión [%s] terminada\n", inet_ntoa(s_cliente.sin_addr));
         }
     }
 }
@@ -373,10 +519,29 @@ void atender_solicitudes()
 */
 void finalizar_conexion(void)
 {
-    // si el socket esta en uso
+    int i; // uso general
+
+    // si el socket servidor está en uso
     if (socket_id != -1)
     {
-        // TODO: cerrar todas las conexiones cliente abiertas
+        // cerrar todas las conexiones (sokets) cliente abiertas
+        for (i = 0; i < sockets_cliente.usado; i++)
+        {
+            // si el socket permanece abierto
+            if (sockets_cliente.numeros[i] != -1)
+            {
+                // cerrar el socket
+                close(sockets_cliente.numeros[i]);
+
+                if (G_MODO_EJECUCION == DEBUG)
+                {
+                    printf("socket cliente [%d] cerrado\n", sockets_cliente.numeros[i]);
+                }
+            }
+        }
+
+        // liberar memoria utilizada por el array de sockets
+        int_array_liberar(&sockets_cliente);
 
         // cerrar el socket
         close(socket_id);

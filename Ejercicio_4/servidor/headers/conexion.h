@@ -7,7 +7,7 @@
     Parámetros:
         modo_ejecucion: modo de ejecución de la conexión
         puerto: puerto que utilizará el socket
-        cantidad_clientes_maxima: cantidad máxima de clientes simultáneos
+        cantidad_clientes_maxima: tamaño del buffer del puerto
     Retorna:
         1: conexión inicializada
         2: ERROR: no se pudo crear el socket
@@ -24,7 +24,7 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
     Salida:
         muestra en pantalla los mensajes de las solicitudes   
 */
-void atender_solicitudes();
+void atender_solicitudes(void);
 
 /*
     Finalizar la conexión

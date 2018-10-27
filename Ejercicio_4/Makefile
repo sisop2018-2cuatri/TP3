@@ -4,9 +4,9 @@ all: ./cliente/cliente ./servidor/servidor
 	gcc ./cliente/objects/cliente.o ./cliente/objects/configuracion.o ./cliente/objects/conexion.o -o ./cliente/cliente
 
 ./servidor/servidor: ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o
-	gcc ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o -o ./servidor/servidor 
+	gcc ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o -o ./servidor/servidor -lpthread 
 
-./servidor/objects/conexion.o: ./servidor/sources/conexion.c 
+./servidor/objects/conexion.o: ./servidor/sources/conexion.c
 	gcc -c ./servidor/sources/conexion.c -o ./servidor/objects/conexion.o
 
 ./servidor/objects/configuracion.o: ./servidor/sources/configuracion.c 
