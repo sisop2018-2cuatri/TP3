@@ -25,3 +25,11 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
         muestra en pantalla los mensajes de las solicitudes   
 */
 void atender_solicitudes();
+
+/*
+    Finalizar la conexión
+    ---------------------
+    finaliza la conexión cerrando el socket, si la conexión
+    estaba cerrada, no hace nada.
+*/
+void finalizar_conexion(void);

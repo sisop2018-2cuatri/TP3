@@ -21,7 +21,7 @@ MOSTRAR_AYUDA=TRUE
 // (int) puerto utilizado por el socket
 // debe ser mayor a 1024 y menor a 65536
 // por seguridad se recomienda usar valores altos
-SOCKET_PUERTO=55445
+SOCKET_PUERTO=55444
 
 // (int > 0) cantidad máxima de clientes
 // que se pueden conectar de forma simultánea

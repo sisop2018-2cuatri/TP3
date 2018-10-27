@@ -303,7 +303,7 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
     G_MODO_EJECUCION = modo_ejecucion;
 
     // Mostrar datos de conexión
-    printf("Servidor IP [%s] PUERTO [%d]\n", inet_ntoa(servidor.sin_addr), puerto);
+    printf("\nServidor IP [%s] PUERTO [%d]\n", inet_ntoa(servidor.sin_addr), puerto);
 
     return 1; // conexión inicializada correctamente
 }
@@ -368,4 +368,21 @@ void atender_solicitudes()
     }
 
     // TODO: ver como cerrar el socket del server
+}
+
+/*
+    ver conexion.h
+*/
+void finalizar_conexion(void)
+{
+    // si el socket esta en uso
+    if (socket_id != -1)
+    {
+        // cerrar el socket
+        close(socket_id);
+
+        printf("conexión finalizada\n");
+    }
+
+    // TODO: cerrar todas las conexiones cliente abiertas
 }

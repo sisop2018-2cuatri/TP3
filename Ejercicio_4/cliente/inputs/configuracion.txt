@@ -19,7 +19,7 @@ MOSTRAR_AYUDA=TRUE
 SERVER_DIRECCION=0.0.0.0
 
 // (int) puerto de conexión al socket del servidor:
-SERVER_PUERTO=55445
+SERVER_PUERTO=55444
 
 // si se puede conectar, recuerda la IP y puerto
 // modificando los valores de SERVER_DIRECCION y SERVER_PUERTO
@@ -29,4 +29,4 @@ SERVER_PUERTO=55445
 RECORDAR_ULTIMA_CONEXION=TRUE
 
 // materia dictada por el profesor (char[1000]):
-MATERIA_PROFESOR=veterinario
+MATERIA_PROFESOR=auditoria
