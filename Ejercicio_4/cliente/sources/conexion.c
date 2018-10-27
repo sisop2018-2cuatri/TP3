@@ -109,8 +109,10 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         modificar_variable("MATERIA_PROFESOR", materia);
     }
 
-    printf("conectado a [%s:%d]\n", servidor_direccion, socket_puerto);
+    printf("\nconectado a [%s:%d]\n", servidor_direccion, socket_puerto);
     printf("materia [%s]\n", materia);
+    printf("presione enter para continuar...\n");
+    getchar();
 }
 
 /*
@@ -123,6 +125,8 @@ void finalizar_conexion(void)
     {
         // cerrar el socket
         close(socket_id);
+
+        printf("conexión finalizada\n");
     }
 }
 

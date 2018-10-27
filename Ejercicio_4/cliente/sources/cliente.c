@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
 #include "../headers/cliente.h"
 #include "../headers/configuracion.h"
 #include "../headers/conexion.h"
 
-// TODO: on SIGTERM y el otro SIG, CERRAR EL PUERTO CORRECTAMENTE
-
 // valores de configuración general
-Configuracion configuracion;
+static Configuracion configuracion;
 
 int main()
 {
@@ -34,6 +34,9 @@ int main()
         configuracion.socket_puerto,
         configuracion.recordar_ultima_conexion);
 
+    // atrapar señal de fin de ejecución
+    atrapar_seniales();
+
     // menú de opciones
     mostrar_menu();
 
@@ -51,7 +54,10 @@ void mostrar_ayuda(void)
         "Se puede configurar utializando el archivo\n"
         "de configuración \"./inputs/configuracion.txt\"\n"
         "Para aplicar los cambios guarde el archivo y luego\n"
-        "reinicie la ejecución del servidor.\n"
+        "reinicie la ejecución del cliente.\n"
+        "Para salir puede utilizar las señales SIGTERM ó SIGINT\n"
+        "a menos que no puedan ser procesadas en su sistema cuyo\n"
+        "caso será informado en la terminal.\n"
         "----------------------------\n"
         "\n";
 
@@ -122,6 +128,48 @@ void mostrar_menu(void)
 
     // cerrar la conexión
     finalizar_conexion();
+}
+
+/*
+    ver cliente.h
+*/
+void atrapar_seniales()
+{
+    if (signal(SIGTERM, fin_ejecucion) == SIG_ERR)
+    {
+        printf("ADVERTENCIA: no se podrá procesar SIGTERM\n");
+        printf("evite utilizar esta señal\n");
+    }
+    if (signal(SIGINT, fin_ejecucion) == SIG_ERR)
+    {
+        printf("ADVERTENCIA: no se podrá procesar SIGINT\n");
+        printf("evite utilizar esta señal\n");
+    }
+
+    // SIGKILL y SIGSTOP nunca pueden atraparse
+}
+
+/*
+    ver cliente.h
+*/
+void fin_ejecucion(int senial)
+{
+    printf("\n");
+
+    // cerrar la conexión
+    finalizar_conexion();
+
+    // salir del programa
+    exit(0);
+}
+
+/*
+    ver cliente.h
+*/
+void mensaje_materia_rendida(void)
+{
+    printf("Se considera que un alumno rindió una materia\n");
+    printf("cuando se le hayan cargado al menos dos notas\n");
 }
 
 //  ====================================
@@ -222,7 +270,12 @@ void cargar_nueva_nota(void)
         switch (estado)
         {
         case 1:
-            printf("nota cargada correctamente\n");
+            printf("alumno [%d]\n", dni);
+            printf("materia [%s]\n", configuracion.materia_profesor);
+            printf("evaluación [%s]\n",
+                   (tipo_evaluacion == 0) ? "PARCIAL UNO" : ((tipo_evaluacion == 1) ? "PARCIAL DOS" : "RECUPERATORIO"));
+            printf("nota [%.2f]\n", nota);
+            printf("Cargada correctamente\n");
             break;
         case 2:
             printf("ERROR: dni debe ser un número positivo mayor a cero\n");
@@ -307,7 +360,8 @@ void obtener_promedio_materia(void)
         printf("\n");
         if (strcmp(respuesta, "0.00") == 0)
         {
-            printf("El alumno no rindió la materia [%s]\n", configuracion.materia_profesor);
+            printf("El alumno [%d] no rindió la materia [%s]\n", dni, configuracion.materia_profesor);
+            mensaje_materia_rendida();
         }
         else if (strcmp(respuesta, "-1") == 0)
         {
@@ -374,7 +428,8 @@ void obtener_promedio_general(void)
         printf("\n");
         if (strcmp(respuesta, "0.00") == 0)
         {
-            printf("El alumno no rindió ninguna materia\n");
+            printf("El alumno [%d] no rindió ninguna materia\n", dni);
+            mensaje_materia_rendida();
         }
         else if (strcmp(respuesta, "-1") == 0)
         {

@@ -8,6 +8,23 @@ void mostrar_ayuda(void);
 */
 void mostrar_menu(void);
 
+/*
+    Indica al sistema que vamos a manejar las señales
+    de fin de programa que sean recibidas
+*/
+void atrapar_seniales(void);
+
+/*
+    Adminsitra la señal de fin de ejecución
+    al ser recibida
+*/
+void fin_ejecucion(int senial);
+
+/*
+    Informar al usuario como se calcula una materia rendida
+*/
+void mensaje_materia_rendida(void);
+
 //  ====================================
 //          FUNCIONES DEL MENÚ
 //  ====================================
