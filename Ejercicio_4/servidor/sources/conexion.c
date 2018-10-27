@@ -366,8 +366,6 @@ void atender_solicitudes()
             printf("conexión [%s] terminada\n", inet_ntoa(s_cliente.sin_addr));
         }
     }
-
-    // TODO: ver como cerrar el socket del server
 }
 
 /*
@@ -378,11 +376,11 @@ void finalizar_conexion(void)
     // si el socket esta en uso
     if (socket_id != -1)
     {
+        // TODO: cerrar todas las conexiones cliente abiertas
+
         // cerrar el socket
         close(socket_id);
 
         printf("conexión finalizada\n");
     }
-
-    // TODO: cerrar todas las conexiones cliente abiertas
 }

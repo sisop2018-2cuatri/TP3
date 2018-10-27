@@ -251,7 +251,6 @@ void borrar(Lista *lista, t_registro registro)
 
 /*
     Liberar los recursos utilizados por la lista de notas
-    // TODO: utilizar al liberar el socket
 */
 void vaciar_lista(Lista *lista)
 {
@@ -642,8 +641,7 @@ void mostrar_notas(int orden)
 
     if (!lista)
     {
-        printf("No hay notas para mostrar\n");
-        printf("-------------------------\n");
+        printf("listado de notas vacío\n");
         return;
     }
 
@@ -672,4 +670,12 @@ void mostrar_notas(int orden)
     }
 
     printf("-------------------------\n\n");
+}
+
+/*
+    ver notas.h
+*/
+void liberar_memoria(void)
+{
+    vaciar_lista(&l_notas);
 }

@@ -72,7 +72,7 @@ int main()
                     printf("ERROR: no se pudo asociar el socket con el puerto [%d]\n", configuracion.socket_puerto);
 
                     // ingresar un nuevo puerto
-                    printf("Ingrese el puerto de conexión: ");
+                    printf("Ingrese puerto de conexión: ");
                     while (scanf("%i", &configuracion.socket_puerto) != 1 ||
                            configuracion.socket_puerto <= 1024 ||
                            configuracion.socket_puerto > 65535)
@@ -82,7 +82,7 @@ int main()
                         {
                             // limpiar buffer
                         }
-                        printf("Ingrese el puerto de conexión: ");
+                        printf("Ingrese puerto de conexión: ");
                     }
                     while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
                     {
@@ -173,6 +173,10 @@ void fin_ejecucion(int senial)
 
     // cerrar la conexión
     finalizar_conexion();
+
+    // liberar recursos
+    liberar_memoria();
+    mostrar_notas(ASCENDENTE);
 
     // salir del programa
     exit(0);

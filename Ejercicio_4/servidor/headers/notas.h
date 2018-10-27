@@ -101,3 +101,8 @@ float get_promedio_general(int dni);
     Se muestra en pantalla el listado de notas cargadas en memoria
 */
 void mostrar_notas(int orden);
+
+/*
+    libera la memoria ocupada por la lista de notas
+*/
+void liberar_memoria(void);
