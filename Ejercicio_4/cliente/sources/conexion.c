@@ -3,11 +3,48 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include "../headers/conexion.h"
 #include "../headers/configuracion.h"
 
 int socket_id = -1;          // socket de conexión
 struct sockaddr_in servidor; // estructura del socket
+
+/*
+    Resuelve la IP basada en un HOSTNAME
+    ------------------------------------
+    Parámetros:
+        hostname: nombre del host
+        ip: cadena de salida con la ip resuleta para el hostname
+    Retorna:
+        0: si pudo resolver la IP
+        1: si la IP no pudo ser resuelta
+*/
+int hostname_a_ip(char *hostname, char *ip)
+{
+    struct hostent *he;
+    struct in_addr **addr_list;
+    int i;
+
+    if ((he = gethostbyname(hostname)) == NULL)
+    {
+        // descomentar para ver el error de resolución
+        // herror("gethostbyname");
+        return 1;
+    }
+
+    addr_list = (struct in_addr **)he->h_addr_list;
+
+    for (i = 0; addr_list[i] != NULL; i++)
+    {
+        //Return the first one;
+        strcpy(ip, inet_ntoa(*addr_list[i]));
+        return 0;
+    }
+
+    return 1;
+}
 
 /*
     ver conexion.h
@@ -17,6 +54,7 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
     int estado = -1;     // estado de la conexión
     char str_puerto[12]; // valor del puerto como string
     int c_buffer;        // para limpiar el flujo de entrada
+    char IP[100];        // si ingresan un hostname, almacesa la IP resuelta
 
     // cerrar la conexión por si ya fue inicializada previamente
     finalizar_conexion();
@@ -48,11 +86,20 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         }
 
         // si la dirección es vacía ú ocurrió un error de conexión
-        if (strlen(servidor_direccion) == 0 || estado != -1)
+        if (hostname_a_ip(servidor_direccion, IP) != 0 || estado != -1)
         {
             printf("Ingrese la dirección del servidor: ");
             fflush(stdin);
             scanf("%s", servidor_direccion);
+
+            // si se puede resolver el host name
+            while (hostname_a_ip(servidor_direccion, IP) != 0)
+            {
+                printf("ERROR: no se pudo resolver IP de [%s]\n", servidor_direccion);
+                printf("Ingrese la dirección del servidor: ");
+                fflush(stdin);
+                scanf("%s", servidor_direccion);
+            }
         }
 
         // si el puerto es incorrecto ú ocurrió un error de conexión
@@ -86,7 +133,7 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         }
 
         // configurar socket
-        servidor.sin_addr.s_addr = inet_addr(servidor_direccion);
+        servidor.sin_addr.s_addr = inet_addr(IP);
         servidor.sin_family = AF_INET;
         servidor.sin_port = htons(socket_puerto);
         bzero(&(servidor.sin_zero), 8); // completar con ceros
@@ -94,7 +141,7 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         // conectar con el servidor
         if (connect(socket_id, (struct sockaddr *)&servidor, sizeof(servidor)) < 0)
         {
-            printf("ERROR: no se pudo conectar a [%s:%d]\n", servidor_direccion, socket_puerto);
+            printf("ERROR: no se pudo conectar a [%s:%d]\n", IP, socket_puerto);
             estado = 3;
         }
     }
@@ -103,13 +150,13 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
     if (recordar)
     {
         // guardar variables de conexión en la configuración para el próximo inicio
-        modificar_variable("SERVER_DIRECCION", servidor_direccion);
+        modificar_variable("SERVER_DIRECCION", IP);
         sprintf(str_puerto, "%d", socket_puerto);
         modificar_variable("SERVER_PUERTO", str_puerto);
         modificar_variable("MATERIA_PROFESOR", materia);
     }
 
-    printf("\nconectado a [%s:%d]\n", servidor_direccion, socket_puerto);
+    printf("\nconectado a [%s:%d]\n", IP, socket_puerto);
     printf("materia [%s]\n", materia);
     printf("presione enter para continuar...\n");
     getchar();

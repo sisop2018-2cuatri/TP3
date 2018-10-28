@@ -1,28 +1,46 @@
+cli_obj = ./cliente/objects/
+cli_src = ./cliente/sources/
+cli_obj_list = \
+	$(cli_obj)cliente.o \
+	$(cli_obj)configuracion.o \
+	$(cli_obj)conexion.o
+srv_obj = ./servidor/objects/
+srv_src = ./servidor/sources/
+srv_obj_list = \
+	$(srv_obj)servidor.o \
+	$(srv_obj)conexion.o \
+	$(srv_obj)configuracion.o \
+	$(srv_obj)notas.o
+
 all: ./cliente/cliente ./servidor/servidor
 
-./cliente/cliente: ./cliente/objects/cliente.o ./cliente/objects/configuracion.o ./cliente/objects/conexion.o
-	gcc ./cliente/objects/cliente.o ./cliente/objects/configuracion.o ./cliente/objects/conexion.o -o ./cliente/cliente
+./servidor/servidor: $(srv_obj_list)
+	gcc $(srv_obj_list) -o ./servidor/servidor -lpthread 
 
-./servidor/servidor: ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o
-	gcc ./servidor/objects/servidor.o ./servidor/objects/conexion.o ./servidor/objects/configuracion.o ./servidor/objects/notas.o -o ./servidor/servidor -lpthread 
+$(srv_obj)conexion.o: $(srv_src)conexion.c
+	gcc -c $(srv_src)conexion.c -o $(srv_obj)conexion.o
 
-./servidor/objects/conexion.o: ./servidor/sources/conexion.c
-	gcc -c ./servidor/sources/conexion.c -o ./servidor/objects/conexion.o
+$(srv_obj)configuracion.o: $(srv_src)configuracion.c 
+	gcc -c $(srv_src)configuracion.c -o $(srv_obj)configuracion.o
 
-./servidor/objects/configuracion.o: ./servidor/sources/configuracion.c 
-	gcc -c ./servidor/sources/configuracion.c -o ./servidor/objects/configuracion.o
+$(srv_obj)notas.o: $(srv_src)notas.c
+	gcc -c $(srv_src)notas.c -o $(srv_obj)notas.o
 
-./servidor/objects/notas.o: ./servidor/sources/notas.c
-	gcc -c ./servidor/sources/notas.c -o ./servidor/objects/notas.o
+$(srv_obj)servidor.o: $(srv_src)servidor.c
+	gcc -c $(srv_src)servidor.c -o $(srv_obj)servidor.o
 
-./servidor/objects/servidor.o: ./servidor/sources/servidor.c
-	gcc -c ./servidor/sources/servidor.c -o ./servidor/objects/servidor.o
+./cliente/cliente: $(cli_obj_list)
+	gcc $(cli_obj_list) -o ./cliente/cliente
 
-./cliente/objects/conexion.o: ./cliente/sources/conexion.c 
-	gcc -c ./cliente/sources/conexion.c -o ./cliente/objects/conexion.o
+$(cli_obj)conexion.o: $(cli_src)conexion.c 
+	gcc -c $(cli_src)conexion.c -o $(cli_obj)conexion.o
 
-./cliente/objects/configuracion.o: ./cliente/sources/configuracion.c 
-	gcc -c ./cliente/sources/configuracion.c -o ./cliente/objects/configuracion.o
+$(cli_obj)configuracion.o: $(cli_src)configuracion.c 
+	gcc -c $(cli_src)configuracion.c -o $(cli_obj)configuracion.o
 
-./cliente/objects/cliente.o: ./cliente/sources/cliente.c
-	gcc -c ./cliente/sources/cliente.c -o ./cliente/objects/cliente.o
+$(cli_obj)cliente.o: $(cli_src)cliente.c
+	gcc -c $(cli_src)cliente.c -o $(cli_obj)cliente.o
+
+clean:
+	-rm $(cli_obj)*.o
+	-rm $(srv_obj)*.o

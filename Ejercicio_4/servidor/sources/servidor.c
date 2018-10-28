@@ -7,12 +7,6 @@
 #include "../headers/configuracion.h"
 #include "../headers/notas.h"
 
-// TODO: No deja procesos zombies o huérfanos.
-// TODO: Funciona tanto localmente como a través de la red desde distintas máquinas
-// TODO: Maneja correctamente el cierre de los puertos al finalizar
-// TODO: Se conecta con nombre de máquinas
-// TODO: Soporta múltiples clientes (se probará con más de 5)
-
 int main()
 {
     int estado;   // guarda el estado de las funciones
