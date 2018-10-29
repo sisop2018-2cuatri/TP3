@@ -1,0 +1,2 @@
+gcc -Iinclude -c src/cliente.c -o obj/cliente.o 
+Makefile:16: recipe for target 'cliente.o' failed
