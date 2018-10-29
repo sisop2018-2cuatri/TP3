@@ -40,16 +40,11 @@ void obtener_promedio_general(void);
     Cierra la conexión actual y 
     solicita al usuario nuevos parámetros de conexión
 */
-void cambiar_la_conexion(void);
 
 /*
-    Elimina los datos de la conexión actual
-    modificando el archivo de configuración
-*/
-void borrar_datos_conexion(void);
-
-/*
-    Carga las configuraciones
+    Carga de configuraciones en directorio local.
+    param: s_config*
+        estructura de configuracion del programa
 */
 int cargar_config(s_config*);
 

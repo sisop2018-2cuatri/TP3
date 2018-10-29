@@ -26,7 +26,7 @@ int main(){
     cargar_config(&configuracion);
 
     if (configuracion.modo_ejecucion == 1){
-        printf("MODO DEBUG ACTIVADO:\n\nSETTINGS:\n");
+        printf("**MODO DEBUG ACTIVADO**\n\nSETTINGS:\n");
         mostrar_config(&configuracion); // mostrar valores de configuración
     }
 
@@ -74,28 +74,24 @@ void mostrar_menu(void)
         printf("1] Cargar nueva nota\n");
         printf("2] Obtener promedio en la materia\n");
         printf("3] Ver promedio general del alumno\n");
-        printf("4] Cambiar la conexión\n");
         printf("\n");
-        printf("5] Borrar datos de conexión y salir\n");
-        printf("6] Salir\n");
+        printf("4] Salir\n");
 
         do
         {
-            printf("\nIntroduzca una opción (1-6): ");
+            printf("\nIntroduzca una opción (1-4): ");
             fflush(stdin);
             scanf(" %c", &opcion);
 
-            while ((ch = getchar()) != EOF && ch != '\n')
-            {
+            while ((ch = getchar()) != EOF && ch != '\n'){
                 // borrar todo lo que no es el primer caracter
                 // osea únicamente nos intereza la opción
             }
 
-            if (opcion < '1' || opcion > '6')
-            {
+            if (opcion < '1' || opcion > '4'){
                 printf("Opción incorrecta\n");
             }
-        } while (opcion < '1' || opcion > '6');
+        } while (opcion < '1' || opcion > '4');
 
         printf("\n");
         switch (opcion)
@@ -109,18 +105,12 @@ void mostrar_menu(void)
         case '3': // Ver promedio general del alumno
             obtener_promedio_general();
             break;
-        case '4': // Cambiar la conexión
-            cambiar_la_conexion();
-            break;
-        case '5': // Borrar mis datos y salir
-            borrar_datos_conexion();
-            break;
         default:
             // fin menú
             break;
         }
 
-    } while (opcion != '5' && opcion != '6');
+    } while (opcion != '4');
 
     // cerrar la conexión
     finalizar_conexion();
@@ -142,7 +132,7 @@ void cargar_nueva_nota(void)
 //ver cliente.h
 void obtener_promedio_materia(void)
 {
-    printf("TODO: obtener promedio de materia");
+    printf("TODO: obtener promedio de materia\n");
     /*int estado;           // estado de la respuesta
     char mensaje[1024];   // mensaje que se envia al servidor
     char respuesta[1024]; // respuesta del servidor
@@ -209,7 +199,7 @@ void obtener_promedio_materia(void)
 //ver cliente.h
 void obtener_promedio_general(void)
 {
-    printf("Obtener promedio general");
+    printf("Obtener promedio general\n");
     /*int estado;           // estado de la respuesta
     char mensaje[1024];   // mensaje que se envia al servidor
     char respuesta[1024]; // respuesta del servidor
@@ -268,38 +258,6 @@ void obtener_promedio_general(void)
 
     printf("presione enter para continuar...\n");
     getchar();
-    */
-}
-
-
-//ver cliente.h
-void cambiar_la_conexion(void)
-{
-    printf("TODO?:Cambiar conexcion");
-    /*
-    // limpiar parámetros de conexión
-    configuracion.materia_profesor[0] = '\0';
-    configuracion.server_direccion[0] = '\0';
-    configuracion.socket_puerto = 0;
-
-    // solicitar nueva conexión
-    inicializar_conexion(
-        configuracion.materia_profesor,
-        configuracion.server_direccion,
-        configuracion.socket_puerto,
-        configuracion.recordar_ultima_conexion);
-    */
-}
-
-
-//ver cliente.h
-void borrar_datos_conexion(void)
-{
-    printf("TODO?: borrar datos conexion");
-    /*
-    modificar_variable("SERVER_DIRECCION", "");
-    modificar_variable("SERVER_PUERTO", "");
-    modificar_variable("MATERIA_PROFESOR", "");
     */
 }
 

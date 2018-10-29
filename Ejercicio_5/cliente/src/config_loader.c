@@ -48,14 +48,14 @@ int load_config(char* conf_path, s_config* conf){
 
 void mostrar_config(s_config *conf){
 	printf("MATERIA: %s\n", conf->materia);
-	printf("MOSTRAR AYUDA: %d\n", conf->mostrar_ayuda);
-	printf("MODO DE EJECUCION: %d\n", conf->modo_ejecucion);
+	printf("MOSTRAR AYUDA: %s\n", conf->mostrar_ayuda == 1? "SI": "NO");
+	printf("MODO DE EJECUCION: %s\n", conf->modo_ejecucion? "DEBUG":"NORMAL");
 }
 
 int crear_arch_conf(char* local_path){
     FILE * fp = NULL;
     const char text[]=
-        "//Archivo de configuracion\n//Todo lo que este con // sera ignorado, toda linea vacia sera ignorada\n//No borrar este archivo, es fundamental para el funcionamiento del servidor y clientes\n\n//DEBUG=1 RELEASE=0\nMODO_EJECUCION=1\n//MOSTRAR=1 NO_MOSTRAR=0\n MOSTRAR_AYUDA=1\n//MATERIA DEL PROFESOR QUE USE ESTE PROGRAMA\nMATERIA=Analisis de software";
+        "//Archivo de configuracion\n//Todo lo que este con // sera ignorado, toda linea vacia sera ignorada\n//No borrar este archivo, es fundamental para el funcionamiento del servidor y clientes\n\n//DEBUG=1 RELEASE=0\nMODO_EJECUCION=1\n//MOSTRAR=1 NO_MOSTRAR=0\nMOSTRAR_AYUDA=1\n//MATERIA DEL PROFESOR QUE USE ESTE PROGRAMA\nMATERIA=Analisis de software";
 
     fp = fopen(local_path, "w");
     fprintf(fp,"%s", text);
@@ -71,7 +71,7 @@ int cargar_config(s_config* configuracion){
 
     if(carga != EXITO){
             if(carga == READ_FAILURE){
-                printf("No hay archivo local, generar uno nuevo?");
+                printf("No hay archivo de configuracion, generar uno nuevo?");
             }
             if(carga == INCOMPLETE_OPTION_FILE){
                 printf("Archivo de configuracion incompleto. generar uno nuevo?");
@@ -79,6 +79,8 @@ int cargar_config(s_config* configuracion){
             
             if(leer_entradaYN()==1){
                 crear_arch_conf(local_path);
+            }else{
+            	printf("Usando valores por defecto\n");
             }
             configuracion->modo_ejecucion=1;
             strcpy(configuracion->materia,"Sistemas Operativos");

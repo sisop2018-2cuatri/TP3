@@ -1,6 +1,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <string_utils.h>
+#include <stdio.h>
 
 int prefix(const char *pre, const char *str)
 {
@@ -10,7 +11,7 @@ int prefix(const char *pre, const char *str)
 int remove_trailing_spaces(char* palabra){
 	
 	char* fin_pal;
-	char* pos_ant;
+	char* pos_ant= NULL;
 
 	if(strlen(palabra)==0)
 		return 0;
@@ -22,7 +23,9 @@ int remove_trailing_spaces(char* palabra){
 		pos_ant = fin_pal;
 		fin_pal--;
 	}
-	*pos_ant = '\0';
+
+	if(pos_ant != fin_pal)
+		*pos_ant = '\0';
 
 	return 1;
 }
