@@ -1,1 +1,3 @@
 #define READ_FAILURE 10
+#define INCOMPLETE_OPTION_FILE -10
+#define EXITO 1

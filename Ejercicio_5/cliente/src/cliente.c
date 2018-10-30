@@ -54,7 +54,7 @@ void mostrar_ayuda(void)
         "Se puede configurar utilizando el archivo\n"
         "de configuración \"./conf/config.conf\"\n"
         "Para aplicar los cambios guarde el archivo y luego\n"
-        "reinicie la ejecución del servidor.\n"
+        "reinicie la ejecución del cliente.\n"
         "----------------------------\n"
         "\n";
 

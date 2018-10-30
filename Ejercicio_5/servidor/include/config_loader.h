@@ -1,5 +1,5 @@
-#ifndef PROTOCOL_H
-#define PROTOCOL_H
+#ifndef CONFIG_LOADER_H
+#define CONFIG_LOADER_H
 
 typedef struct config{
 	int modo_ejecucion;
@@ -9,5 +9,7 @@ typedef struct config{
 
 int load_config(char*, s_config*);
 void mostrar_config(s_config*);
+int crear_arch_conf(char*);
+int cargar_config(s_config*);
 
 #endif

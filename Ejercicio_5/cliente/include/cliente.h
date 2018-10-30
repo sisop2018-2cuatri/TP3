@@ -1,5 +1,8 @@
 #include <config_loader.h>
 
+#define SIZE 100000
+#define NAME "shmnotas"
+
 /*
     Mostrar ayuda en pantalla
 */
