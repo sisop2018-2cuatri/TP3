@@ -65,11 +65,6 @@ void finalizarHijos()
         kill(hijos_pid[i], SIGINT);
     }
 
-    if (pid_padre == getpid())
-    {
-        printf("\n");
-    }
-
     // finalizar proceso
     printf("proceso [%d] finalizado\n", getpid());
 
