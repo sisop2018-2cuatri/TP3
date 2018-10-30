@@ -1,0 +1,7 @@
+Instrucciones
+-------------
+
+a) En una terminal situarse en el directorio "./Ejercicio_1"
+b) Ejecutar comando "make" para generar el binario
+c) Ejecutar el binario con "./run"
+d) Para finalizar presionar "ENTER" ó "Ctrl+C"
