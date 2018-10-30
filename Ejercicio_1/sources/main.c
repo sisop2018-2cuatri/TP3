@@ -30,6 +30,13 @@ int main()
     // iniciar procreación
     crearHijos();
 
+    // si estoy en el padre
+    if (pid_padre == getpid())
+    {
+        printf("TODO: crear 2 zombie\n");
+        printf("TODO: crear 3 demonio\n");
+    }
+
     // escuchar sigkill
     signal(SIGINT, finalizarHijos);
 
