@@ -11,9 +11,11 @@ int cantidad_hijos = 2;   // cantidad de hijos que tiene el proceso
 int cantidad_zombies = 2; // cantidad de zombies que tiene el proceso
 int numero_hermanos = 1;  // cantidad de hermanos que son en total en esta generación
 
+// mostrar datos del proceso en curso
 void mostrarEntidad(char tipo);
+
+// crear procesos hijos
 void crearHijos();
-void finalizarHijos();
 
 int main()
 {
@@ -76,6 +78,8 @@ void crearHijos()
                 // la cantidad de hijos que tiene, depende del número de
                 // hermanos que tenga el proceso
                 cantidad_hijos = cantidad_hijos == numero_hermanos ? 1 : 2;
+
+                // crear hijos del proceso hijo
                 crearHijos();
             }
 
@@ -94,16 +98,19 @@ void crearHijos()
         // crear nuevo zombie
         hijo_pid = fork();
 
+        // si es el proceso hijo
         if (hijo_pid == 0)
         {
-            // mostrar datos del hijo
+            // mostrar datos del proceso zombie
             mostrarEntidad('Z');
 
-            // si es el proceso hijo
+            // TODO: crear demonios
+
             printf("proceso [%d] finalizado para ser zombie\n", getpid());
-            exit(0); // zombie creado
+            exit(0); // finalizar para que sea zombie
         }
 
+        // indicar que el zombie fue creado y crear el siguiente si lo hay
         cantidad_zombies--;
     }
 }
