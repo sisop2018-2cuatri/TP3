@@ -10,7 +10,7 @@ install:
 	$(shell ./install.sh)
 
 cliente: cliente.o config_loader.o print_utils.o string_utils.o
-	gcc $(C_INC) obj/cliente.o obj/string_utils.o obj/config_loader.o obj/print_utils.o -o bin/cliente -lrt
+	gcc $(C_INC) obj/cliente.o obj/string_utils.o obj/config_loader.o obj/print_utils.o -o bin/cliente -lrt -lpthread
 
 cliente.o: src/cliente.c
 	gcc $(C_INC) -c $(R_CLN)/cliente.c -o obj/$@ 

@@ -1,4 +1,3 @@
-
 /*
  *EJERCICIO 5
  *Git: https://github.com/sisop2018-2cuatri/TP3/Ejercicio_5
@@ -17,12 +16,19 @@
 #include <unistd.h>
 #include <print_utils.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <semaphore.h>
 
+sem_t* mutex_i;
+sem_t* mutex_d;
+sem_t* mutex_f;
+t_mensaje* data;
+s_config configuracion;
 
 int main(){
-    s_config configuracion;
+    
     int fd;
-
     cargar_config(&configuracion);
 
     if (configuracion.modo_ejecucion == 1){
@@ -36,7 +42,7 @@ int main(){
     }
 
     // inicializar la conexión
-    //inicializar_conexion();
+    inicializar_conexion();
     
     // menú de opciones
     mostrar_menu();
@@ -70,7 +76,7 @@ void mostrar_menu(void)
 
     do
     {
-        printf("Opciones: \n");
+        printf("\nOpciones: \n");
         printf("1] Cargar nueva nota\n");
         printf("2] Obtener promedio en la materia\n");
         printf("3] Ver promedio general del alumno\n");
@@ -109,7 +115,7 @@ void mostrar_menu(void)
             // fin menú
             break;
         }
-
+        if(opcion != '4') pausa();
     } while (opcion != '4');
 
     // cerrar la conexión
@@ -124,141 +130,156 @@ void mostrar_menu(void)
 //ver cliente.h
 void cargar_nueva_nota(void)
 {
-    printf("TODO: cargar nueva nota\n");
-    // TODO:
+    t_mensaje nota;
+    nota.codigo = CARGAR;
+    int eva_aux;
+
+    printf("INGRESE DNI:\n");
+    scanf("%ld",&(nota.dni));
+
+    printf("TIPO DE EVALUACION:\n1]Primer Parcial\n2]Segundo Parcial\n3]Recuperatorio\n");
+    do{       
+        scanf("%d",&eva_aux);
+        if(eva_aux<1 || eva_aux>3)printf("\nIngrese uno valido entre los nombrados por favor\n");
+    }while(eva_aux<1 || eva_aux>3);
+    nota.evaluacion = eva_aux;
+
+    printf("INGRESE NOTA\n");
+    scanf("%f",&(nota.nota));
+    
+    strcpy(nota.materia, configuracion.materia);
+    
+    sem_wait(mutex_i);
+    
+    *data = nota;
+
+    sem_post(mutex_d);
+    sem_wait(mutex_f);
+
+    //leo respuesta
+    if(data->codigo == EXITO){
+        printf("CARGA EXITOSA\n");
+        printf("CODIGO RECIBIDO:%d\n", data->codigo);
+    }
+    else{
+        printf("CARGA FALLIDA\n");
+        print_error(data->codigo);
+    }
+    sem_post(mutex_i);
 }
 
 
 //ver cliente.h
 void obtener_promedio_materia(void)
 {
-    printf("TODO: obtener promedio de materia\n");
-    /*int estado;           // estado de la respuesta
-    char mensaje[1024];   // mensaje que se envia al servidor
-    char respuesta[1024]; // respuesta del servidor
-    int c_buffer;         // para limpiar el buffer del teclado
-    int dni;              // dni del alumno
+    t_mensaje nota;
+    nota.codigo = PROMAT;
 
-    printf("obtener promedio de la materia del alumno (dni): ");
-    while (scanf("%i", &dni) != 1)
-    {
-        printf("ERROR: dni no aceptado\n");
-        while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
-        {
-            // limpiar buffer
-        }
-        printf("Ingrese dni del alumno: ");
-    }
-    while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
-    {
-        // limpiar buffer
-    }
+    printf("INGRESE DNI:\n");
+    scanf("%ld",&(nota.dni));
+    strcpy(nota.materia, configuracion.materia);
+   
+    sem_wait(mutex_i);
+    
+    *data = nota;
 
-    // asignar valores al mensaje
-    mensaje[0] = '\0';
-    sprintf(mensaje, "get_promedio,%d,%s", dni, configuracion.materia_profesor);
+    sem_post(mutex_d);
+    sem_wait(mutex_f);
 
-    // hacer solicitud al servidor
-    respuesta[0] = '\0';
-    estado = enviar_mensaje(mensaje, respuesta);
-    if (estado != 1)
-    {
-        if (estado == 2)
-        {
-            printf("ERROR: no se pudo enviar la solicitud al servidor\n");
-        }
-        else if (estado == 3)
-        {
-            printf("ERROR: no se pudo recibir respuesta del servidor\n");
-        }
+    //leo respuesta
+    if(data->codigo == EXITO){
+        printf("CONSULTA EXITOSA\n");
+        printf("PROMEDIO MATERIA %s: %.2f\n", data->materia, data->nota);
     }
-    else
-    {
-        if (strcmp(respuesta, "0.00") == 0)
-        {
-            printf("El alumno no rindió la materia [%s]\n", configuracion.materia_profesor);
-        }
-        else if (strcmp(respuesta, "-1") == 0)
-        {
-            printf("ERROR: no se pudo obtener promedio del alumno\n");
-        }
-        else
-        {
-            printf("alumno [%d]\n", dni);
-            printf("materia [%s]\n", configuracion.materia_profesor);
-            printf("promedio [%s]\n", respuesta);
-        }
+    else{
+        printf("CONSULTA FALLIDA\n");
     }
 
-    printf("presione enter para continuar...\n");
-    getchar();
-    */
+    sem_post(mutex_i);
 }
 
 
 //ver cliente.h
 void obtener_promedio_general(void)
 {
-    printf("Obtener promedio general\n");
-    /*int estado;           // estado de la respuesta
-    char mensaje[1024];   // mensaje que se envia al servidor
-    char respuesta[1024]; // respuesta del servidor
-    int c_buffer;         // para limpiar el buffer del teclado
-    int dni;              // dni del alumno
+    t_mensaje nota;
+    nota.codigo = PROGEN;
+    
+    //Ingreso de DNI
+    printf("INGRESE DNI:\n");
+    scanf("%ld",&(nota.dni));
+   
+    sem_wait(mutex_i);
+    
+    //Paso la variable local a la shm
+    *data = nota;
 
-    printf("obtener promedio general del alumno (dni): ");
-    while (scanf("%i", &dni) != 1)
-    {
-        printf("ERROR: dni no aceptado\n");
-        while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
-        {
-            // limpiar buffer
-        }
-        printf("Ingrese dni del alumno: ");
-    }
-    while ((c_buffer = getchar()) != '\n' && c_buffer != EOF)
-    {
-        // limpiar buffer
-    }
+    sem_post(mutex_d);
+    sem_wait(mutex_f);
 
-    // asignar valores al mensaje
-    mensaje[0] = '\0';
-    sprintf(mensaje, "get_promedio_general,%d", dni);
-
-    // hacer solicitud al servidor
-    respuesta[0] = '\0';
-    estado = enviar_mensaje(mensaje, respuesta);
-    if (estado != 1)
-    {
-        if (estado == 2)
-        {
-            printf("ERROR: no se pudo enviar la solicitud al servidor\n");
-        }
-        else if (estado == 3)
-        {
-            printf("ERROR: no se pudo recibir respuesta del servidor\n");
-        }
+    //Leo respuesta
+    if(data->codigo == EXITO){
+        printf("CONSULTA EXITOSA\n");
+        printf("PROMEDIO GENERAL: %.2f\n", data->nota);
     }
-    else
-    {
-        if (strcmp(respuesta, "0.00") == 0)
-        {
-            printf("El alumno no rindió ninguna materia\n");
-        }
-        else if (strcmp(respuesta, "-1") == 0)
-        {
-            printf("ERROR: no se pudo obtener promedio general del alumno\n");
-        }
-        else
-        {
-            printf("alumno [%d]\n", dni);
-            printf("promedio general [%s]\n", respuesta);
-        }
+    else{
+        printf("CONSULTA FALLIDA\n");
     }
 
-    printf("presione enter para continuar...\n");
-    getchar();
-    */
+    sem_post(mutex_i);
 }
 
+int inicializar_conexion(){
+    int fd = shm_open(NAME, O_RDWR, 0666);
+    int opcion;
+
+    mutex_d = sem_open("mutex_d", O_CREAT);
+    mutex_i = sem_open("mutex_i", O_CREAT);
+    mutex_f = sem_open("mutex_f", O_CREAT);
+
+    if(fd<0){
+        perror("shm_open()");
+        return EXIT_FAILURE;
+    }
+
+    data = (t_mensaje *)mmap(0, sizeof(t_mensaje), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+    return 1;
+};
+
 void finalizar_conexion(){};
+
+void pausa(){
+    while( getchar() != '\n' );
+    printf("Presiona [Enter] para continuar: ");
+    while( getchar() != '\n' );
+}
+
+void print_error(int e){
+    switch(e){
+        case DNI_NEGATIVO:
+            printf("ERROR: DNI NEGATIVO\n");
+            break;
+        case MATERIA_VACIA:
+            printf("ERROR: MATERIA VACIA\n");
+            break;
+        case MATERIA_LARGA:
+            printf("ERROR: MATERIA LARGA\n");
+            break;
+        case MATERIA_COMA:
+            printf("ERROR: MATERIA CON COMA\n");
+            break;
+        case TIPO_EV_INV:
+            printf("ERROR: TIPO DE EVALUACION INVALIDO\n");
+            break;
+        case NOTA_INVALIDA:
+            printf("ERROR: NOTA INVALIDA, NO ESTA ENTRE 1 O 10\n");
+            break;
+        case FALLA_GUARDADO:
+            printf("ERROR: NO SE PUDO GUARDAR REGISTRO\n");
+            break;
+        case REPETIDO:
+            printf("ERROR: REGISTRO REPETIDO\n");
+            break;
+    }
+}

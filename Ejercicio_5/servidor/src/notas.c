@@ -4,24 +4,6 @@
 #include <ctype.h>
 #include <notas.h>
 
-typedef struct registro
-{
-    int dni;
-    char materia[1000];
-    enum TIPOS_EVALUACION evaluacion;
-    float nota;
-} t_registro;
-
-typedef struct _nodo
-{
-    t_registro registro;
-    struct _nodo *siguiente;
-    struct _nodo *anterior;
-} tipoNodo;
-
-typedef tipoNodo *pNodo;
-typedef tipoNodo *Lista;
-
 // listado de registros en memoria
 Lista l_notas = NULL;
 // path del archivo con las notas
@@ -34,13 +16,6 @@ char *G_PATH_NOTAS;
 //      - auxiliares
 //  ========================================================
 
-int insertar(Lista *l, t_registro registro);
-void borrar(Lista *l, t_registro registro);
-int cmp_notas(t_registro a, t_registro b);
-int cmp_materias(char *m1, char *m2);
-void init_nota(t_registro *n_registro, int dni, char *mat, enum TIPOS_EVALUACION ev, float nota);
-void vaciar_lista(Lista *);
-void mostrar_registro(t_registro *n_registro);
 
 /*
     Mostrar un nodo registro en consola
@@ -52,7 +27,7 @@ void mostrar_registro(t_registro *n_registro)
     printf("[%d, %s, %s, %.2f]\n",
            n_registro->dni,
            n_registro->materia,
-           (tipo == 0) ? "PARCIAL UNO" : ((tipo == 1) ? "PARCIAL DOS" : "RECUPERATORIO"),
+           (tipo == 0) ? "Primer Parcial" : ((tipo == 1) ? "Segundo Parcial" : "Recuperatorio"),
            n_registro->nota);
 }
 
@@ -198,6 +173,9 @@ int insertar(Lista *lista, t_registro registro)
     return 1;
 }
 
+/*
+    Borra un nodo de la lista de notas
+*/
 void borrar(Lista *lista, t_registro registro)
 {
     pNodo nodo;
@@ -246,6 +224,9 @@ void borrar(Lista *lista, t_registro registro)
     free(nodo);
 }
 
+/*
+    Liberar los recursos utilizados por la lista de notas
+*/
 void vaciar_lista(Lista *lista)
 {
     pNodo nodo, actual;
@@ -404,61 +385,47 @@ int cargar_nota(int dni, char *materia, enum TIPOS_EVALUACION evaluacion, float 
 {
     t_registro nueva_nota;
 
-    if (dni <= 0)
-    {
-        return 2; // DNI debe ser un número positivo
+    if (dni <= 0){
+        return DNI_NEGATIVO; // DNI debe ser un número positivo
     }
-    else
-    {
-        // remover espacios vacios al comienzo de la cadena
-        while (isspace(*materia))
+    else{
+    
+        while (isspace(*materia))// remover espacios vacios al comienzo de la cadena
             ++materia;
 
-        // verificar que la materia, no este vacia ni sea grande ni tenga comas
-        if (materia[0] == '\0' || materia[0] == '\n')
-        {
-            return 3; // materia vacia
+        if (materia[0] == '\0' || materia[0] == '\n'){ // verificar que la materia, no este vacia ni sea grande ni tenga comas
+            return MATERIA_VACIA; // materia vacia
         }
-        else if (strlen(materia) > 1000)
-        {
-            return 4; // materia demasiado larga
+        else if (strlen(materia) > 30){
+            return MATERIA_LARGA; // materia demasiado larga
         }
-        else if (strchr(materia, ','))
-        {
-            return 5; // la materia no puede contener comas
+        else if (strchr(materia, ',')){
+            return MATERIA_COMA; // la materia no puede contener comas
         }
         else if (evaluacion != PARCIAL_UNO &&
                  evaluacion != PARCIAL_DOS &&
-                 evaluacion != RECUPERATORIO)
-        {
-            return 6; // tipo de evaluación no aceptado
+                 evaluacion != RECUPERATORIO){
+            return TIPO_EV_INV; // tipo de evaluación no aceptado
         }
-        else if (nota < 1 || nota > 10)
-        {
-            return 7; // nota fuera de rango
+        else if (nota < 1 || nota > 10){
+            return NOTA_INVALIDA; // nota fuera de rango
         }
-        else
-        {
+        else{
             // inicializar valores del nuevo nodo
             init_nota(&nueva_nota, dni, materia, evaluacion, nota);
 
-            if (insertar(&l_notas, nueva_nota)) // nueva nota insertada en memoria
-            {
-                if (guardar_nota_archivo(nueva_nota))
-                {
-                    return 1; // guardado correctamente en archivo
+            if (insertar(&l_notas, nueva_nota)) { // nueva nota insertada en memoria
+                if (guardar_nota_archivo(nueva_nota)){
+                    return EXITO; // guardado correctamente en archivo
                 }
-                else // no se pudo guardar el registro en el archivo
-                {
-                    // la quitamos del listado de notas en memoria
-                    borrar(&l_notas, nueva_nota);
+                else { // no se pudo guardar el registro en el archivo
+                    borrar(&l_notas, nueva_nota);// la quitamos del listado de notas en memoria
 
-                    return 9; // no se pudo guardar el registro en el archivo
+                    return FALLA_GUARDADO; // no se pudo guardar el registro en el archivo
                 }
             }
-            else // el registro está repetido
-            {
-                return 8;
+            else { // el registro está repetido
+                return REPETIDO;
             }
         }
     }
@@ -549,11 +516,15 @@ float get_promedio(int dni, char *materia)
                 // al menos una de las tres es cero
                 // por lo que podemos sumar todas
                 // y retornar el promedio entre dos
+                printf("P1: %f, P2: %f R: %f\n", parcial_uno, parcial_dos, recuperatorio);
+                printf("PROMEDIO: %f", ((parcial_uno + parcial_dos + recuperatorio) / 2));
                 return (parcial_uno + parcial_dos + recuperatorio) / 2;
             }
             else if (cantidad_notas == 3) // se checkea para prevenir un error (más de 3 notas)
             {
                 // retornamos el promedio entre las dos notas de mayor valor
+                printf("M1: %f, M2: %f\n", nota_mayor_uno, nota_mayor_dos);
+                printf("PROMEDIO: %f", ((nota_mayor_uno + nota_mayor_dos) / 2));
                 return (nota_mayor_uno + nota_mayor_dos) / 2;
             }
         }
@@ -635,8 +606,7 @@ void mostrar_notas(int orden)
 
     if (!lista)
     {
-        printf("No hay notas para mostrar\n");
-        printf("-------------------------\n");
+        printf("listado de notas vacío\n");
         return;
     }
 
@@ -665,4 +635,12 @@ void mostrar_notas(int orden)
     }
 
     printf("-------------------------\n\n");
+}
+
+/*
+    ver notas.h
+*/
+void liberar_memoria(void)
+{
+    vaciar_lista(&l_notas);
 }

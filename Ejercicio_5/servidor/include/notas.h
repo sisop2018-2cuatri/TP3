@@ -1,12 +1,50 @@
+#ifndef NOTAS_H
+#define NOTAS_H
 #define ASCENDENTE 1
 #define DESCENDENTE 0
+#define DNI_NEGATIVO 2
+#define MATERIA_VACIA 3
+#define MATERIA_LARGA 4
+#define MATERIA_COMA 5
+#define TIPO_EV_INV 6
+#define NOTA_INVALIDA 7
+#define EXITO 1
+#define FALLA_GUARDADO 9
+#define REPETIDO 8
+#define FALLA 0
 
 enum TIPOS_EVALUACION
 {
-    PARCIAL_UNO = 0,
-    PARCIAL_DOS = 1,
-    RECUPERATORIO = 2
+    PARCIAL_UNO,
+    PARCIAL_DOS,
+    RECUPERATORIO
 };
+
+typedef struct registro
+{
+    int dni;
+    char materia[30];
+    enum TIPOS_EVALUACION evaluacion;
+    float nota;
+} t_registro;
+
+typedef struct _nodo
+{
+    t_registro registro;
+    struct _nodo *siguiente;
+    struct _nodo *anterior;
+} tipoNodo;
+
+typedef tipoNodo *pNodo;
+typedef tipoNodo *Lista;
+
+int insertar(Lista*, t_registro);
+void borrar(Lista*, t_registro);
+int cmp_notas(t_registro, t_registro);
+int cmp_materias(char*, char*);
+void init_nota(t_registro*, int, char*, enum TIPOS_EVALUACION , float);
+void vaciar_lista(Lista*);
+void mostrar_registro(t_registro*);
 
 /*
     Abre el archivo de notas
@@ -70,7 +108,7 @@ int cargar_nota(int dni, char *materia, enum TIPOS_EVALUACION evaluacion, float 
                 retorna la sumatoria de ambas entre dos
             3 notas: 
                 retorna la sumatoria de las dos mayores entre dos
-    Parametros:
+    Parámetros:
         dni: del alumno del cual se consulta el promedio
         materia: nombre de la materia de la cual corresponde el promedio
     Retorna:
@@ -86,7 +124,7 @@ float get_promedio(int dni, char *materia);
     Algoritmo de cálculo:
         se obtiene la sumatoria de promedios entre todas las materias
         rendidas y se divide entre la cantidad de materias rendidas.
-    Parametros:
+    Parámetros:
         dni: del alumno del cual se consulta el promedio general
     Retorna:
         mayor a 0: promedio general del alumno
@@ -101,3 +139,10 @@ float get_promedio_general(int dni);
     Se muestra en pantalla el listado de notas cargadas en memoria
 */
 void mostrar_notas(int orden);
+
+/*
+    libera la memoria ocupada por la lista de notas
+*/
+void liberar_memoria(void);
+
+#endif

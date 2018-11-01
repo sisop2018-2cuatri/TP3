@@ -9,6 +9,13 @@
 #define SIZE 100000
 #define NAME "shmnotas"
 
+typedef struct s_mensaje{
+	char codigo[6];
+	long int dni;
+	char materia[30];
+	float nota;
+}t_mensaje;
+
 sem_t* mutex_i;
 sem_t* mutex_d;
 sem_t* mutex_f;
@@ -26,43 +33,46 @@ int main(){
 		perror("shm_open()");
 		return EXIT_FAILURE;
 	}
+	t_mensaje nota;
+	t_mensaje *data = (t_mensaje *)mmap(0, sizeof(t_mensaje), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-	char *comando = (char *)mmap(0, sizeof(char)*6, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	char var[6];
-	printf("receiver mapped address: %p\n",comando);
-
-	printf("TEST SHM\n");
-	//printf("COMANDO: %s\n",comando);
-	
 	while(opcion!=1){
-		printf("0] Enviar string\n1] Cerrar\n");
+		printf("0] Enviar NOTA\n1] Cerrar\n");
 		scanf("%d",&opcion);
 		switch(opcion){
 			case 0:
-				printf("INGRESE PALABRA:\n");
+				//Preparo mensaje a mandar
+				strcpy(nota.codigo,"CARGAR");
+				printf("INGRESE DNI:\n");
+				scanf("%ld",&(nota.dni));
+				printf("INGRESE NOTA\n");
+				scanf("%f",&(nota.nota));
+				strcpy(nota.materia, "SISTEMAS OPERATIVOS");
+				
 				sem_wait(mutex_i);
-				printf("PASO POR EL WAIT I\n");
-				scanf("%s",comando);
-				printf("ANTES DEL STRCPY\n");
-				//strcpy(comando,"ret");
-				printf("DESPUES DEL STRCPY\n");
+				*data = nota;
 				sem_post(mutex_d);
-				printf("PASO POR EL POST D\n");
 				sem_wait(mutex_f);
-				printf("PASO POR EL WAIT F\n");
-				//printf("%s",comando);
+				
+				//leo respuesta
+				if(strcmp(data->codigo,"EXITO")==0){
+					printf("CARGA EXITOSA\n");
+					printf("CODIGO RECIBIDO:%s\n", data->codigo);
+				}
+				else{
+					printf("CARGA FALLIDA\n");
+					printf("CODIGO RECIBIDO:%s\n", data->codigo);
+				}
 				sem_post(mutex_i);
-				printf("PASO POR EL POST I\n");
 				break;
 			case 1:
 				sem_unlink("mutex_i");
 				sem_unlink("mutex_f");
 				sem_unlink("mutex_d");
-				munmap(comando, sizeof(char)*6);
+				munmap(data, sizeof(char)*6);
 				return 1;
 				break;
 		}
 	}
-
 	return 1;
 }
