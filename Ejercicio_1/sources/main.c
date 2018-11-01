@@ -6,10 +6,11 @@
 
 #define TIPO(y, x) ((y == 'Z') ? "ZOMBIE" : (y == 'D') ? "DEMONIO" : ((x == 1) ? "PADRE" : (x == 2) ? "HIJO" : (x == 3) ? "NIETO" : "BISNIETO"))
 
-int generacion = 1;       // generación del proceso
-int cantidad_hijos = 2;   // cantidad de hijos que tiene el proceso
-int cantidad_zombies = 2; // cantidad de zombies que tiene el proceso
-int numero_hermanos = 1;  // cantidad de hermanos que son en total en esta generación
+int generacion = 1;        // generación del proceso
+int cantidad_hijos = 2;    // cantidad de hijos que tiene el proceso
+int cantidad_zombies = 2;  // cantidad de zombies que tiene el proceso
+int cantidad_demonios = 0; // cantidad de demonios que tiene el proceso
+int numero_hermanos = 1;   // cantidad de hermanos que son en total en esta generación
 
 // mostrar datos del proceso en curso
 void mostrarEntidad(char tipo);
@@ -17,11 +18,20 @@ void mostrarEntidad(char tipo);
 // crear procesos hijos
 void crearHijos();
 
+// crear procesos demonios (solo pueden ser hijos de zombies)
+// Retorna:
+//  0: si es el proceso demonio creado
+//  mayor a 0: si es el proceso que creó los demonios
+int crearDemonios();
+
 int main()
 {
-    printf("\n*******************************************\n");
-    printf("| Para cerrar los procesos presione ENTER |\n");
-    printf("*******************************************\n\n");
+    printf("\n*********************************************\n");
+    printf("| Para cerrar los procesos presione ENTER   |\n");
+    printf("| Nota:                                     |\n");
+    printf("|   Los zombie finalizan junto con el padre |\n");
+    printf("|   Los demonios quedan corriendo           |\n");
+    printf("*********************************************\n\n");
 
     mostrarEntidad('G');
 
@@ -39,6 +49,13 @@ int main()
 
 void mostrarEntidad(char tipo)
 {
+    while (tipo == 'D' && getppid() != 1)
+    {
+        // si es un demonio
+        // antes de mostrar sus datos
+        // esperamos que finalice el proceso padre
+    }
+
     printf("pid[%d] ppid[%d] generación[%d] tipo[%s]\n",
            getpid(),
            getppid(),
@@ -104,13 +121,55 @@ void crearHijos()
             // mostrar datos del proceso zombie
             mostrarEntidad('Z');
 
-            // TODO: crear demonios
+            // si es zombie, puede tener hijos demonio
+            // el primer zombie tiene 2 demonios
+            // el segundo zombie tiene 1 demonio
+            cantidad_demonios = cantidad_zombies;
 
-            printf("proceso [%d] finalizado para ser zombie\n", getpid());
-            exit(0); // finalizar para que sea zombie
+            // si es el proceso demonio
+            if (crearDemonios() == 0)
+            {
+                // salimos del while que fue creado en su padre
+                break;
+            }
+
+            // finalizar proceso para que sea zombie
+            exit(0);
         }
 
         // indicar que el zombie fue creado y crear el siguiente si lo hay
         cantidad_zombies--;
     }
+}
+
+int crearDemonios()
+{
+    int hijo_pid;
+
+    while (cantidad_demonios)
+    {
+        // crear nuevo demonio
+        hijo_pid = fork();
+
+        // si estamos dentro del proceso demonio
+        if (hijo_pid == 0)
+        {
+            // mostrar datos del proceso demonio
+            mostrarEntidad('D');
+
+            while (1)
+            {
+                // mantener proceso demonio vivo
+            }
+
+            // salir del while porque fue creado
+            // para el proceso padre
+            return 0;
+        }
+
+        // indicar que el demonio fue creado y crear el siguiente si lo hay
+        cantidad_demonios--;
+    }
+
+    return getpid();
 }
