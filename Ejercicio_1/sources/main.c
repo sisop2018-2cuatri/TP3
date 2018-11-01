@@ -4,14 +4,14 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define TIPO(x) ((x == 1) ? "PADRE" : (x == 2) ? "HIJO" : (x == 3) ? "NIETO" : "BISNIETO")
+#define TIPO(y, x) ((y == 'Z') ? "ZOMBIE" : (y == 'D') ? "DEMONIO" : ((x == 1) ? "PADRE" : (x == 2) ? "HIJO" : (x == 3) ? "NIETO" : "BISNIETO"))
 
-int generacion = 1;      // generación del proceso
-int cantidad_hijos = 2;  // cantidad de hijos que hay en la generación siguiente
-int numero_hermanos = 1; // cantidad de hermanos que tiene un proceso hijo
-int hijos_pid[100];      // pid de los hijos creados del proceso
+int generacion = 1;       // generación del proceso
+int cantidad_hijos = 2;   // cantidad de hijos que tiene el proceso
+int cantidad_zombies = 2; // cantidad de zombies que tiene el proceso
+int numero_hermanos = 1;  // cantidad de hermanos que son en total en esta generación
 
-void mostrarEntidad();
+void mostrarEntidad(char tipo);
 void crearHijos();
 void finalizarHijos();
 
@@ -21,7 +21,7 @@ int main()
     printf("| Para cerrar los procesos presione ENTER |\n");
     printf("*******************************************\n\n");
 
-    mostrarEntidad();
+    mostrarEntidad('G');
 
     // iniciar procreación
     crearHijos();
@@ -35,13 +35,13 @@ int main()
     return 0;
 }
 
-void mostrarEntidad()
+void mostrarEntidad(char tipo)
 {
     printf("pid[%d] ppid[%d] generación[%d] tipo[%s]\n",
            getpid(),
            getppid(),
            generacion,
-           TIPO(generacion));
+           TIPO(tipo, generacion));
 }
 
 void crearHijos()
@@ -49,7 +49,7 @@ void crearHijos()
     int hijo_pid;
 
     // los procesos hijos de este proceso
-    // tendran "numero_hermanos" procesos hermanos
+    // tendrán "numero_hermanos" procesos hermanos
     numero_hermanos = cantidad_hijos * numero_hermanos - 1;
 
     // mientras tenga hijos para crear
@@ -65,7 +65,10 @@ void crearHijos()
             generacion++;
 
             // mostrar datos del hijo
-            mostrarEntidad();
+            mostrarEntidad('G');
+
+            // solamente el primer proceso tiene hijos zombie
+            cantidad_zombies = 0;
 
             // si aún no es la última generación
             if (generacion < 4)
@@ -83,5 +86,24 @@ void crearHijos()
 
         // indicar que el hijo fue creado y crear el siguiente si lo hay
         cantidad_hijos--;
+    }
+
+    // crear zombies
+    while (cantidad_zombies)
+    {
+        // crear nuevo zombie
+        hijo_pid = fork();
+
+        if (hijo_pid == 0)
+        {
+            // mostrar datos del hijo
+            mostrarEntidad('Z');
+
+            // si es el proceso hijo
+            printf("proceso [%d] finalizado para ser zombie\n", getpid());
+            exit(0); // zombie creado
+        }
+
+        cantidad_zombies--;
     }
 }
