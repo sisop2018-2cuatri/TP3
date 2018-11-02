@@ -6,7 +6,7 @@
 
 #define TIPO(y, x) ((y == 'Z') ? "ZOMBIE" : (y == 'D') ? "DEMONIO" : ((x == 1) ? "PADRE" : (x == 2) ? "HIJO" : (x == 3) ? "NIETO" : "BISNIETO"))
 
-int generacion = 1;        // generación del proceso
+int generacion = 0;        // generación del proceso
 int cantidad_hijos = 2;    // cantidad de hijos que tiene el proceso
 int cantidad_zombies = 2;  // cantidad de zombies que tiene el proceso
 int cantidad_demonios = 0; // cantidad de demonios que tiene el proceso
@@ -49,12 +49,9 @@ int main()
 
 void mostrarEntidad(char tipo)
 {
-    while (tipo == 'D' && getppid() != 1)
-    {
-        // si es un demonio
-        // antes de mostrar sus datos
-        // esperamos que finalice el proceso padre
-    }
+    // siempre se muestran los procesos apenas son creados
+    // por lo que podemos aumentar la generación antes de mostrarlos
+    generacion++;
 
     printf("pid[%d] ppid[%d] generación[%d] tipo[%s]\n",
            getpid(),
@@ -80,9 +77,6 @@ void crearHijos()
         // si estamos en el proceso hijo
         if (hijo_pid == 0)
         {
-            // el hijo es de la siguiente generación
-            generacion++;
-
             // mostrar datos del hijo
             mostrarEntidad('G');
 
@@ -153,7 +147,7 @@ int crearDemonios()
 
         // si estamos dentro del proceso demonio
         if (hijo_pid == 0)
-        {
+        {            
             // mostrar datos del proceso demonio
             mostrarEntidad('D');
 
