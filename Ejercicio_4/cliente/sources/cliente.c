@@ -51,11 +51,11 @@ void mostrar_ayuda(void)
     char *mensaje_ayuda =
         "SISTEMA DE NOTAS DE ALUMNOS\n"
         "---------------------------\n"
-        "Se puede configurar utializando el archivo\n"
+        "- Se puede configurar utializando el archivo\n"
         "de configuración \"./inputs/configuracion.txt\"\n"
         "Para aplicar los cambios guarde el archivo y luego\n"
         "reinicie la ejecución del cliente.\n"
-        "Para salir puede utilizar las señales SIGTERM ó SIGINT\n"
+        "- Para salir puede utilizar las señales SIGTERM ó SIGINT\n"
         "a menos que no puedan ser procesadas en su sistema cuyo\n"
         "caso será informado en la terminal.\n"
         "----------------------------\n"

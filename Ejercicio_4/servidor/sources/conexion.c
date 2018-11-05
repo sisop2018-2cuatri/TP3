@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <semaphore.h>
 #include "../headers/conexion.h"
 #include "../headers/configuracion.h"
 #include "../headers/notas.h"
@@ -27,6 +28,8 @@ int socket_id;               // socket servidor
 struct sockaddr_in servidor; // configuración del socket servidor
 int G_MODO_EJECUCION;        // modo de ejecución del server
 IntArray sockets_cliente;    // sockets de los clientes que se conectan
+
+sem_t mutex; // semáforo para control de threads
 
 //  ========================================================
 //      funciones privadas:
@@ -160,8 +163,14 @@ void *manejador_conexion(void *parametros)
                    cliente_mensaje);
         }
 
+        // las solicitudes se atienden de a una en una
+        sem_wait(&mutex);
+
         // ejecutar una función según la solicitud del cliente
         procesar_solicitud(cliente.con, cliente.sk, cliente_mensaje);
+
+        // indicar que podemos procesar otra solicitud
+        sem_post(&mutex);
     }
 
     if (tam_mensaje == 0)
@@ -496,6 +505,9 @@ void atender_solicitudes(void)
     pthread_t thread_id; // thread para cada conexión cliente
     t_cliente cliente;   // estructura cliente y socket cliente
 
+    // semáforo para atender las solicitudes de a una por una
+    sem_init(&mutex, 0, 1);
+
     // tamaño de la estructura de configuración del cliente
     sk_cliente_tam = sizeof(struct sockaddr_in);
 
@@ -530,6 +542,9 @@ void atender_solicitudes(void)
 void finalizar_conexion(void)
 {
     int i; // uso general
+
+    // cerrar semáforo de threads
+    sem_destroy(&mutex);
 
     // si el socket servidor está en uso
     if (socket_id != -1)
