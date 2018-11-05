@@ -88,7 +88,7 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
         // si la dirección es vacía ú ocurrió un error de conexión
         if (hostname_a_ip(servidor_direccion, IP) != 0 || estado != -1)
         {
-            printf("Ingrese la dirección del servidor: ");
+            printf("Ingrese IP o HOSTNAME del servidor: ");
             fflush(stdin);
             scanf("%s", servidor_direccion);
 
@@ -96,7 +96,7 @@ void inicializar_conexion(char *materia, char *servidor_direccion, int socket_pu
             while (hostname_a_ip(servidor_direccion, IP) != 0)
             {
                 printf("ERROR: no se pudo resolver IP de [%s]\n", servidor_direccion);
-                printf("Ingrese la dirección del servidor: ");
+                printf("Ingrese IP o HOSTNAME del servidor: ");
                 fflush(stdin);
                 scanf("%s", servidor_direccion);
             }

@@ -16,7 +16,7 @@ MODO_EJECUCION=DEBUG
 MOSTRAR_AYUDA=TRUE
 
 // dirección del servidor (char[1000]):
-SERVER_DIRECCION=127.0.0.1
+SERVER_DIRECCION=127.0.1.1
 
 // (int) puerto de conexión al socket del servidor:
 SERVER_PUERTO=55444
@@ -29,4 +29,4 @@ SERVER_PUERTO=55444
 RECORDAR_ULTIMA_CONEXION=TRUE
 
 // materia dictada por el profesor (char[1000]):
-MATERIA_PROFESOR=
+MATERIA_PROFESOR=programación II

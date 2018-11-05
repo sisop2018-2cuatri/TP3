@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "../headers/conexion.h"
 #include "../headers/configuracion.h"
 #include "../headers/notas.h"
@@ -438,6 +439,9 @@ void procesar_solicitud(struct sockaddr_in s_cliente, int cliente_socket, char *
 */
 int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_maxima)
 {
+    // nombre del servidor
+    char hostname[_SC_HOST_NAME_MAX + 1];
+
     // crear socket: protocolo IPv4, TCP
     socket_id = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_id == -1)
@@ -471,8 +475,14 @@ int inicializar_conexion(int modo_ejecucion, int puerto, int cantidad_clientes_m
     // solo limita el buffer de entrada) se utiliza un array dinámico
     inicializar_int_array(&sockets_cliente, cantidad_clientes_maxima);
 
+    // obtener nombre del servidor
+    gethostname(hostname, _SC_HOST_NAME_MAX + 1);
+
     // Mostrar datos de conexión
-    printf("\nServidor IP [%s] PUERTO [%d]\n", inet_ntoa(servidor.sin_addr), puerto);
+    printf("\nServidor IP[%s] HOSTNAME[%s] PUERTO[%d]\n",
+           inet_ntoa(servidor.sin_addr),
+           hostname,
+           puerto);
 
     return 1; // conexión inicializada correctamente
 }
