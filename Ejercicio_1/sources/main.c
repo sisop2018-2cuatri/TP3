@@ -11,6 +11,7 @@ int cantidad_hijos = 2;    // cantidad de hijos que tiene el proceso
 int cantidad_zombies = 2;  // cantidad de zombies que tiene el proceso
 int cantidad_demonios = 0; // cantidad de demonios que tiene el proceso
 int numero_hermanos = 1;   // cantidad de hermanos que son en total en esta generación
+int ppid = -1;             // ppid del proceso que muestra sus datos
 
 // mostrar datos del proceso en curso
 void mostrarEntidad(char tipo);
@@ -52,6 +53,17 @@ void mostrarEntidad(char tipo)
     // siempre se muestran los procesos apenas son creados
     // por lo que podemos aumentar la generación antes de mostrarlos
     generacion++;
+
+    // si es un demonio
+    if (tipo == 'D')
+    {
+        // esperamos a que muera su padre (que se haga zombie)
+        // y luego mostramos sus datos
+        // para que el ppid del demonio se muestre bien
+        while (ppid == getppid())
+        {
+        }
+    }
 
     printf("pid[%d] ppid[%d] generación[%d] tipo[%s]\n",
            getpid(),
@@ -140,6 +152,9 @@ int crearDemonios()
 {
     int hijo_pid;
 
+    // los demonios muestran sus datos, luego de que cambie su ppid
+    ppid = getpid();
+
     while (cantidad_demonios)
     {
         // crear nuevo demonio
@@ -147,7 +162,7 @@ int crearDemonios()
 
         // si estamos dentro del proceso demonio
         if (hijo_pid == 0)
-        {            
+        {
             // mostrar datos del proceso demonio
             mostrarEntidad('D');
 
