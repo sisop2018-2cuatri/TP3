@@ -1,0 +1,37 @@
+#Ejercicio 5
+#https://github.com/sisop2018-2cuatri/TP3
+#Todo list
+#maximiliano-rdl
+
+TODO:
+	Para cliente:
+	-cli
+	-comunicacion con shm 
+	-valores por defecto por si falla la lectura de parametros en el config
+	-definicion de protocolo de comunicacion mediante shm
+	-testing
+
+	Para servidor:
+	-cli
+	-gestion de semaforos para lectura y escritura de la db
+	-definicion de funciones para acceso a la db
+	-comunicacion con shm
+	-lectura local del archivo de configuracion por si falla la instalacion
+	-valores por defecto por si falla la lectura de parametros en el config
+	-definiion de protocolo mediante shm
+	-testing
+	
+	Para utils:
+	-Defines de errores
+	-Defines de estructuras de comunicacion
+	-Defines de excepciones (hay excepciones en C?)
+	-Creacion de funciones para logear errores y mandarmelos al mail personal //CHETOOOOO
+	
+	En general:
+	-Documentacion
+	-Updatear esta lista
+	-Terminar esta lista
+	-Generar pruebas de stress automaticas
+	-Prueba en laboratorio
+	-Pegarme un corchaso en la pera de tanto alcohol si meto esta materia
+

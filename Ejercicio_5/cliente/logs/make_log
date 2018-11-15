@@ -1,0 +1,14 @@
+gcc -Iinclude -c src/cliente.c -o obj/cliente.o 
+src/cliente.c: In function ‘main’:
+src/cliente.c:21:8: warning: implicit declaration of function ‘cargar_config’; did you mean ‘mostrar_config’? [-Wimplicit-function-declaration]
+     if(cargar_config(&configuracion)){
+        ^~~~~~~~~~~~~
+        mostrar_config
+gcc -Iinclude -c src/protocol.c -o obj/protocol.o
+gcc -Iinclude -c src/utils/string_utils.c -o obj/string_utils.o
+gcc -Iinclude obj/cliente.o obj/protocol.o obj/string_utils.o -o bin/cliente -lrt
+obj/cliente.o: En la función `main':
+cliente.c:(.text+0x24): referencia a `cargar_config' sin definir
+collect2: error: ld returned 1 exit status
+Makefile:13: recipe for target 'cliente' failed
+make: *** [cliente] Error 1
