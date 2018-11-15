@@ -1,0 +1,9 @@
+Instrucciones
+-------------
+
+1) En una terminal situarse en el directorio "./Ejercicio_2"
+2) Ejecutar comando "make" para generar el binario
+3) Ejecutar el binario con "./run"
+4) Ingrese el nombre del directorio para analizar
+
+NOTA: el programa analiza únicamente archivos con extensión
