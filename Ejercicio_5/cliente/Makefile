@@ -6,9 +6,6 @@ R_UTL = src/utils
 
 all: cliente
 
-install: 
-	$(shell ./install.sh)
-
 cliente: cliente.o config_loader.o print_utils.o string_utils.o
 	gcc $(C_INC) obj/cliente.o obj/string_utils.o obj/config_loader.o obj/print_utils.o -o bin/cliente -lrt -lpthread
 

@@ -1,11 +1,10 @@
-
 /*
  *EJERCICIO 5
  *Git: https://github.com/sisop2018-2cuatri/TP3/Ejercicio_5
  *Programa: servidor.c
  *Descripcion: Genera memoria compartida y administra la db segun los mensajes que se pasen por esta
  *Autor: maximiliano-rdl
- *Fecha: 24/11/2018
+ *Fecha: 15/11/2018
  **/
 
 #include <stdio.h>
@@ -25,16 +24,16 @@
 #include <time.h>
 #include <notas.h>
 
-int exit_signal=0, fd;
-t_mensaje *data;
-sem_t* mutex_i, *mutex_d, *mutex_f, *mutex_DB;
-FILE* db;
-struct stat db_attr;
+int fd; //file descriptor usado para la shared memory
+t_mensaje *data; //mensaje usado para comunicarse a travez de la shared memory
+sem_t* mutex_i, *mutex_d, *mutex_f, *mutex_DB; //semaforos a usar
+FILE* db; //base de datos
+s_config configuracion; //estructura de configuracion
 
 int main(){
-	
-	s_config configuracion;
     int fd;
+
+    printf("SERVIDOR DE NOTAS DE ALUMNOS\n");
 
     cargar_config(&configuracion);
 
@@ -44,7 +43,7 @@ int main(){
     }
 
     if (configuracion.mostrar_ayuda == 1){
-        printf("\nAYUDA:\n");
+        printf("AYUDA:\n");
         mostrar_ayuda(); // si hay que mostrar la ayuda en el inicio
     }
 
@@ -62,7 +61,6 @@ int main(){
 void mostrar_ayuda(void)
 {
     char *mensaje_ayuda =
-        "SERVIDOR DE NOTAS DE ALUMNOS\n"
         "---------------------------\n"
         "Se puede configurar utilizando el archivo\n"
         "de configuración \"./conf/config.conf\"\n"
@@ -75,89 +73,67 @@ void mostrar_ayuda(void)
 }
 
 int inicializar_servidor(){
-	//system("rm /dev/shm/*"); //MOMENTANEO; CAMBIAR A ALGO MEJOR
-	fd = shm_open(NAME, O_CREAT | O_EXCL | O_RDWR, 0600);
+	fd = shm_open(NAME, O_CREAT | O_EXCL | O_RDWR, 0600); //creacion de memoria compartida
 	//recordar limpiar semaforos si es que me dan cualquier cosa
-	mutex_d = sem_open("mutex_d", O_CREAT, 0660, 0);
-	mutex_i = sem_open("mutex_i", O_CREAT, 0660, 1);
-	mutex_f = sem_open("mutex_f", O_CREAT, 0660, 0);
-	mutex_DB = sem_open("mutex_DB", O_CREAT, 0660, 1);
+	mutex_d = sem_open("mutex_d", O_CREAT, 0660, 0); //creacion de semaforo, acceso server a shm
+	mutex_i = sem_open("mutex_i", O_CREAT, 0660, 1); //creacion de semaforo
+	mutex_f = sem_open("mutex_f", O_CREAT, 0660, 0); //creacion de semaforo
+	mutex_DB = sem_open("mutex_DB", O_CREAT, 0660, 1); //creacion de semaforo de acceso a la DB
 	int db_access, res;
 	float prom;
 
-	stat(DB_PATH, &db_attr); //Consigo los atributos del archivo db para futuro
-
-	/*
-	printf("ESPERANDO ACCESSO AL ARCHIVO\n");
-	sem_wait(mutex_DB);
-	abrir_archivo(&db, DB_PATH, "r+");
-	*/
+	//stat(DB_PATH, &db_attr); //Consigo los atributos del archivo db para futuro
 	
 	if(fd<0){
-		perror("shm_open()");
-		close(fd);
-		//shm_unlink(NAME);
+		perror("shm_open()"); //no se puedo abrir la shm, quizas ya hay una creada?
 		cerrar_servidor();
+		
 		return EXIT_FAILURE;
 	}
 
-	size_t page_size = 4096;
+	size_t page_size = 4096; //defino el tamaño de pagina
 	
-	printf("CALCULO TAMAÑO\n");
-	//size_t tam = sizeof(t_mensaje);
-	
-	ftruncate(fd,TAM);
+	ftruncate(fd,TAM); //trunco la memoria compartida a el tamaño TAM
 
-	t_mensaje *data = (t_mensaje *)mmap(0, TAM, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	//Mapeo al file descriptor fd una estructura t_mensaje usada para comunicarme entre cliente y servidor
+	t_mensaje *data = (t_mensaje *)mmap(0, TAM, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
 
-	signal(SIGINT, cerrar_servidor);
-	signal(SIGTERM, cerrar_servidor);
+	signal(SIGINT, cerrar_servidor); //atrapo la señal sigint y cierro el servidor
+	signal(SIGTERM, cerrar_servidor); //atrapo la señal sigterm y cierro el servidor
 
-	while(exit_signal!=1){
-		printf("ESPERANDO SOLICITUDES\n");
+	while(1){ //se cierra con interrupiones, uma delicia
+		printf("\nESPERANDO SOLICITUDES...\n");
 		sem_wait(mutex_d);
-		printf("SOLICITUD RECIBIDA\n");
+		printf("\n<<SOLICITUD RECIBIDA>>\n");
 		data->evaluacion--;
-		printf("CODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
+		printf("--> MENSAJE RECIBIDO:\nCODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
 		sem_wait(mutex_DB);
 		res=procesar_solicitud(data);
-		printf("CODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
+		printf("<-- MENSAJE A ENVIAR:\nCODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
 		sem_post(mutex_DB);
 		data->codigo = res;
 		sem_post(mutex_f);
 	}
-
-	printf("\nSERVIDOR CERRANDOSE...\n");
-	munmap(data, TAM);
-	close(fd);
-	shm_unlink(NAME);
-	sem_unlink("mutex_i");
-	sem_unlink("mutex_f");
-	sem_unlink("mutex_d");
-	sem_unlink("muted_DB");
-	cerrar_archivo(&db);
 }
 
 void cerrar_servidor(){
-	exit_signal=1;
-	printf("\nSERVIDOR CERRANDOSE...\n");
-	printf("***MUNMAP DATA**\n");
+	print_debug("\nSERVIDOR CERRANDOSE...\n");
+	print_debug("MUNMAP DATA...");
 	munmap(data, TAM);
-	printf("***CLOSE FILE***\n");
+	print_debug("CLOSE FILE...");
 	close(fd);
-	printf("***UNLINK SHM***\n");
+	print_debug("UNLINK SHM...");
 	shm_unlink(NAME);
-	printf("***UNLINK SEM I***\n");
+	print_debug("UNLINK SEM I...");
 	sem_unlink("mutex_i");
-	printf("***UNLINK SEM f***\n");
+	print_debug("UNLINK SEM F...");
 	sem_unlink("mutex_f");
-	printf("***UNLINK SEM d***\n");
+	print_debug("UNLINK SEM D...");
 	sem_unlink("mutex_d");
-	printf("***UNLINK SEM DB***\n");
+	print_debug("UNLINK SEM DB...");
 	sem_unlink("mutex_DB");
-	printf("***CERRAR DB***\n");
-	cerrar_archivo(&db);
 
+	print_debug("FIN\n");
 	exit(EXIT_SUCCESS);
 }
 
@@ -167,13 +143,12 @@ int abrir_archivo(FILE** fp,const char* path,const char* modo){
 }
 
 void cerrar_archivo(FILE** fp){
+	printf("INTENTANDO CERRAR ARCHIVO...");
 	fclose(*fp);
 }
 
 int procesar_solicitud(t_mensaje* m){
 
-	//TODO: fijarme la fecha del archivo, si coincide con la fecha cargada, proceso
-	//si no coincide, cargo archivo de nuevo y trabajo con el actualizado.
 	t_registro reg;
 	float res;
 
@@ -185,7 +160,7 @@ int procesar_solicitud(t_mensaje* m){
 				printf("CARGA EXITOSA!\n");
 			else{
 				print_error(res);
-				return FALLA;
+				return res;
 			}
 			break;
 		case PROMAT:
@@ -196,8 +171,8 @@ int procesar_solicitud(t_mensaje* m){
 				m->nota = res;
 			}
 			else{
-				printf("PROMEDIO NO CALCULABLE");
-				return FALLA;
+				printf("PROMEDIO NO CALCULABLE\n");
+				return res;
 			}
 			break;
 		case PROGEN:
@@ -208,8 +183,8 @@ int procesar_solicitud(t_mensaje* m){
 				m->nota = res;
 			}
 			else{
-				printf("PROMEDIO NO CALCULABLE");
-				return FALLA;
+				printf("PROMEDIO NO CALCULABLE\n");
+				return res;
 			}			
 			break;
 		default:
@@ -218,35 +193,6 @@ int procesar_solicitud(t_mensaje* m){
 	}
 	return EXITO;
 }
-
-float prom_mat(int dni, char* materia){
-
-}
-
-float prom_gen(int dni){
-
-}
-
-/*
-int cargar_nota(t_mensaje* m){
-    struct stat db_attr_act;
-    stat(DB_PATH, &db_attr_act);
-    //printf("Last modified time: %s", ctime(&attr.st_mtime));
-    if(db_attr_act.st_mtime != db_attr.st_mtime){
-    	db_attr=db_attr_act;
-    }
-    return 1;
-}*/
-
-/*#define DNI_NEGATIVO 2
-#define MATERIA_VACIA 3
-#define MATERIA_LARGA 4
-#define MATERIA_COMA 5
-#define TIPO_EV_INV 6
-#define NOTA_INVALIDA 7
-#define EXITO 1
-#define FALLA_GUARDADO 9
-#define REPETIDO 8*/
 
 void print_error(int e){
 	switch(e){
@@ -274,5 +220,11 @@ void print_error(int e){
 		case REPETIDO:
 			printf("ERROR: REGISTRO REPETIDO\n");
 			break;
+	}
+}
+
+void print_debug(char* cadena){
+	if(configuracion.modo_ejecucion == 1){
+		printf("DEBUG: %s\n", cadena);
 	}
 }

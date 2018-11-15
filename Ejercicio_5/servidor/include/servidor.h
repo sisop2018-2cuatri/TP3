@@ -30,6 +30,7 @@ int procesar_solicitud(t_mensaje*);
 float prom_mat(int, char*);
 float prom_gen(int);
 void print_error(int);
+void print_debug(char*);
 //int cargar_nota(t_mensaje*);
 
 #endif
