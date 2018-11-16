@@ -1,1 +1,0 @@
-#define READ_FAILURE 10
