@@ -19,6 +19,7 @@
 #define FALLA_GUARDADO 9
 #define REPETIDO 8
 #define FALLA 0
+#define NOTAS_INSUF 10
 
 enum TIPOS_EVALUACION
 {

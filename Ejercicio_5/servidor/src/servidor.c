@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <servidor.h>
 #include <defines.h>
 #include <signal.h>
@@ -31,8 +32,6 @@ FILE* db; //base de datos
 s_config configuracion; //estructura de configuracion
 
 int main(){
-    int fd;
-
     printf("SERVIDOR DE NOTAS DE ALUMNOS\n");
 
     cargar_config(&configuracion);
@@ -73,16 +72,15 @@ void mostrar_ayuda(void)
 }
 
 int inicializar_servidor(){
+	int res;
+	t_mensaje *data;
+
 	fd = shm_open(NAME, O_CREAT | O_EXCL | O_RDWR, 0600); //creacion de memoria compartida
-	//recordar limpiar semaforos si es que me dan cualquier cosa
 	mutex_d = sem_open("mutex_d", O_CREAT, 0660, 0); //creacion de semaforo, acceso server a shm
 	mutex_i = sem_open("mutex_i", O_CREAT, 0660, 1); //creacion de semaforo
 	mutex_f = sem_open("mutex_f", O_CREAT, 0660, 0); //creacion de semaforo
 	mutex_DB = sem_open("mutex_DB", O_CREAT, 0660, 1); //creacion de semaforo de acceso a la DB
-	int db_access, res;
-	float prom;
 
-	//stat(DB_PATH, &db_attr); //Consigo los atributos del archivo db para futuro
 	
 	if(fd<0){
 		perror("shm_open()"); //no se puedo abrir la shm, quizas ya hay una creada?
@@ -90,13 +88,11 @@ int inicializar_servidor(){
 		
 		return EXIT_FAILURE;
 	}
-
-	size_t page_size = 4096; //defino el tamaño de pagina
 	
 	ftruncate(fd,TAM); //trunco la memoria compartida a el tamaño TAM
 
 	//Mapeo al file descriptor fd una estructura t_mensaje usada para comunicarme entre cliente y servidor
-	t_mensaje *data = (t_mensaje *)mmap(0, TAM, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+	data = (t_mensaje *)mmap(0, TAM, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
 
 	signal(SIGINT, cerrar_servidor); //atrapo la señal sigint y cierro el servidor
 	signal(SIGTERM, cerrar_servidor); //atrapo la señal sigterm y cierro el servidor
@@ -109,9 +105,9 @@ int inicializar_servidor(){
 		printf("--> MENSAJE RECIBIDO:\nCODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
 		sem_wait(mutex_DB);
 		res=procesar_solicitud(data);
-		printf("<-- MENSAJE A ENVIAR:\nCODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
 		sem_post(mutex_DB);
 		data->codigo = res;
+		printf("<-- MENSAJE A ENVIAR:\nCODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
 		sem_post(mutex_f);
 	}
 }
@@ -148,8 +144,6 @@ void cerrar_archivo(FILE** fp){
 }
 
 int procesar_solicitud(t_mensaje* m){
-
-	t_registro reg;
 	float res;
 
 	switch(m->codigo){
@@ -172,6 +166,8 @@ int procesar_solicitud(t_mensaje* m){
 			}
 			else{
 				printf("PROMEDIO NO CALCULABLE\n");
+				res=NOTAS_INSUF;
+				print_error(res);
 				return res;
 			}
 			break;
@@ -184,11 +180,14 @@ int procesar_solicitud(t_mensaje* m){
 			}
 			else{
 				printf("PROMEDIO NO CALCULABLE\n");
+				res=NOTAS_INSUF;
+				print_error(res);
 				return res;
 			}			
 			break;
 		default:
 			printf("CODIGO INVALIDO\n");
+			print_error(res);
 			return CODIGO_INVALIDO;
 	}
 	return EXITO;
@@ -219,6 +218,9 @@ void print_error(int e){
 			break;
 		case REPETIDO:
 			printf("ERROR: REGISTRO REPETIDO\n");
+			break;
+		case NOTAS_INSUF:
+			printf("ERROR: CANTIDAD DE NOTAS INSUFICIENTES PARA ALUMNO\n");
 			break;
 	}
 }

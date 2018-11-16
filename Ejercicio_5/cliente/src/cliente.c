@@ -27,8 +27,6 @@ t_mensaje* data;
 s_config configuracion;
 
 int main(){
-    
-    int fd;
     cargar_config(&configuracion);
 
     if (configuracion.modo_ejecucion == 1){
@@ -159,10 +157,10 @@ void cargar_nueva_nota(void)
     //leo respuesta
     if(data->codigo == EXITO){
         printf("CARGA EXITOSA\n");
-        printf("CODIGO RECIBIDO:%d\n", data->codigo);
+        //printf("CODIGO RECIBIDO:%d\n", data->codigo);
     }
     else{
-        printf("CARGA FALLIDA\n");
+        //printf("CARGA FALLIDA\n");
         print_error(data->codigo);
     }
     sem_post(mutex_i);
@@ -188,11 +186,12 @@ void obtener_promedio_materia(void)
 
     //leo respuesta
     if(data->codigo == EXITO){
-        printf("CONSULTA EXITOSA\n");
+        //printf("CONSULTA EXITOSA\n");
         printf("PROMEDIO MATERIA %s: %.2f\n", data->materia, data->nota);
     }
     else{
-        printf("CONSULTA FALLIDA\n");
+        //printf("CONSULTA FALLIDA\n");
+        print_error(data->codigo);
     }
 
     sem_post(mutex_i);
@@ -219,11 +218,12 @@ void obtener_promedio_general(void)
 
     //Leo respuesta
     if(data->codigo == EXITO){
-        printf("CONSULTA EXITOSA\n");
+        //printf("CONSULTA EXITOSA\n");
         printf("PROMEDIO GENERAL: %.2f\n", data->nota);
     }
     else{
-        printf("CONSULTA FALLIDA\n");
+        //printf("CONSULTA FALLIDA\n");
+        print_error(data->codigo);
     }
 
     sem_post(mutex_i);
@@ -231,8 +231,6 @@ void obtener_promedio_general(void)
 
 int inicializar_conexion(){
     int fd = shm_open(NAME, O_RDWR, 0666);
-    int opcion;
-
     mutex_d = sem_open("mutex_d", O_CREAT);
     mutex_i = sem_open("mutex_i", O_CREAT);
     mutex_f = sem_open("mutex_f", O_CREAT);
@@ -251,7 +249,7 @@ void finalizar_conexion(){};
 
 void pausa(){
     while( getchar() != '\n' );
-    printf("Presiona [Enter] para continuar: ");
+    printf("\nPresiona [Enter] para continuar: \n");
     while( getchar() != '\n' );
 }
 
@@ -267,7 +265,7 @@ void print_error(int e){
             printf("ERROR: MATERIA LARGA\n");
             break;
         case MATERIA_COMA:
-            printf("ERROR: MATERIA CON COMA\n");
+            printf("ERROR: MATERIA CON COMA, POR FAVOR SAQUESELA\n");
             break;
         case TIPO_EV_INV:
             printf("ERROR: TIPO DE EVALUACION INVALIDO\n");
@@ -279,7 +277,11 @@ void print_error(int e){
             printf("ERROR: NO SE PUDO GUARDAR REGISTRO\n");
             break;
         case REPETIDO:
-            printf("ERROR: REGISTRO REPETIDO\n");
+            printf("ERROR: REGISTRO REPETIDO, NO PUEDE PISARSE UNA NOTA YA CARGADA\n");
+            break;
+        case NOTAS_INSUF:
+            printf("ERROR: CANTIDAD DE NOTAS INSUFICIENTES PARA ALUMNO\n"
+                   "NO TIENE NINGUNA NOTA O LE FALTA RENDIR EL SEGUNDO PARCIAL\n");
             break;
     }
 }

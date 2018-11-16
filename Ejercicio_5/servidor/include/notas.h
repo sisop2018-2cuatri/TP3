@@ -10,6 +10,7 @@
 #define NOTA_INVALIDA 7
 #define EXITO 1
 #define FALLA_GUARDADO 9
+#define NOTAS_INSUF 10
 #define REPETIDO 8
 #define FALLA 0
 

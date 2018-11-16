@@ -60,12 +60,12 @@ int crear_arch_conf(char* local_path){
     fp = fopen(local_path, "w");
     fprintf(fp,"%s", text);
     fclose(fp);
+    return 1;
 }
 
 int cargar_config(s_config* configuracion){
     char* local_path="../conf/config.conf";
     int carga; //resultado de la carga
-    int opcion;
 
     carga = load_config(local_path,configuracion);
 
