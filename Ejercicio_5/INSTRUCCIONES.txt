@@ -1,21 +1,27 @@
-INSTRUCCIONES:
+Instrucciones
+-------------
 
-1- CORRER EL SERVIDOR PRIMERO ANTES DE CORRER LOS CLIENTES. ENTRAR A LA CARPETA /bin/ ANTES DE EJECUTAR
-	EL EJECUTABLE DEL SERVIDOR ESTA EN servidor/bin/servidor
-	EL EJECUTABLE DEL CLIENTE ESTA EN cliente/bin/cliente
+1) Crear ejecutables cliente y servidor:
+    a) En una terminal situarse en el directorio "./Ejercicio_5/servidor" para el servidor o "./Ejercicio_5/cliente" para el cliente.
+    b) Ejecutar comando "make" para generar los binarios
+    c) (opcional) Para limpiar los .o ejecutar comando "make clean"
 
-2- CERRAR EL SERVIDOR SIEMPRE ULTIMO.
+2) Iniciar servidor:
+    a) En una terminal ingresar al directorio "./Ejercicio_5/servidor/bin"
+    b) Ejecutar "./servidor" en la terminal
 
-3- EL SERVIDOR SE CIERRA CON SIGINT O SIGTERM, RECOMENDADO USAR EL CTRL+C
+3) Iniciar cliente (repetir para cada cliente): 
+    a) En una terminal ingresar al directorio "./Ejercicio_5/cliente/bin"
+    b) Ejecutar "./cliente" en la terminal
 
-4- NO CORRER MULTIPLES SERVIDORES.
+4) Cerrar servidor:
+	a) Presionar ctrl + c para terminar el proceso limpiamente.
 
-5- ARCHIVOS DE CONFIGURACION EN cliente/conf/config.conf servidor/conf/config.conf
+Configuración
+-------------
 
-6- CUALQUIER CONFIGURACION SERA APLICADA AL REINICIAR EL SERVIDOR/CLIENTE SI ES QUE YA ESTABAN CORRIENDO
-
-7- LA BASE DE DATOS ESTA EN servidor/db/db.dat. SI SE SUMINISTRA SU PROPIA BASE DE DATOS QUE EL FORMATO RESPETE EL EXISTENTE (ESPECIFICADO EN LA CONSIGNA DEL EJERCICIO) O NO SE GARANTIZA FUNCIONAMIENTO
-
-8- ACTIVAR MODO DEBUG EN LA CONFIGURACION PARA MAS INFORMACION EN PANTALLA SOBRE LAS OPERACIONES
-
-9- ACTIVAR AYUDA EN LA CONFIGURACION PARA MAS INFORMACION.
+Tanto el cliente como el servidor, cuentan con 
+un archivo de configuración situado en 
+"./Ejercicio_5/cliente/conf/config.conf" y
+"./Ejercicio_4/servidor/conf/config.conf" respectivamente
+Los archivos de configuración se cargan durante la inicialización
