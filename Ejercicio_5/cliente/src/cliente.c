@@ -4,7 +4,7 @@
  *Programa: cliente.c
  *Descripcion: Cliente que permite conectar a un profesor al servidor de notas *universitario
  *Autor: maximiliano-rdl, LautaroLorenz
- *Fecha: 29/10/2018
+ *Fecha: 20/11/2018
  */
 
 #include <stdio.h>
@@ -71,6 +71,8 @@ void mostrar_menu(void)
 {
     char opcion; // opción seleccionada
     int ch;      // para limpiar el flujo de entrada
+
+	printf("Materia: %s\n",configuracion.materia);
 
     do
     {
@@ -280,7 +282,7 @@ void print_error(int e){
             printf("ERROR: REGISTRO REPETIDO, NO PUEDE PISARSE UNA NOTA YA CARGADA\n");
             break;
         case NOTAS_INSUF:
-            printf("ERROR: CANTIDAD DE NOTAS INSUFICIENTES PARA ALUMNO\n"
+            printf("ERROR: CANTIDAD DE NOTAS INSUFICIENTES PARA EL ALUMNO\n"
                    "NO TIENE NINGUNA NOTA O LE FALTA RENDIR EL SEGUNDO PARCIAL\n");
             break;
     }
