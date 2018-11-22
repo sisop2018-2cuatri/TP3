@@ -23,5 +23,5 @@ Configuración
 Tanto el cliente como el servidor, cuentan con 
 un archivo de configuración situado en 
 "./Ejercicio_5/cliente/conf/config.conf" y
-"./Ejercicio_4/servidor/conf/config.conf" respectivamente
+"./Ejercicio_5/servidor/conf/config.conf" respectivamente
 Los archivos de configuración se cargan durante la inicialización
