@@ -1,0 +1,8 @@
+CAB000  "Aún en el garaje"
+BB000ZZ "Aún en el garaje"
+AA222BB $43.50
+AA333CC $53.75
+AAA999  $15.25
+ASD123  $15.75
+BBB000  $4.00
+III111  $52.00

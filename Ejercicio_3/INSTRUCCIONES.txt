@@ -1,0 +1,20 @@
+Instrucciones
+-------------
+
+1) Crear ejecutable:
+    a) En una terminal situarse en el directorio "./Ejercicio_3"
+    b) Ejecutar comando "make" para generar los binarios
+    c) (opcional) Para limpiar los .o ejecutar comando "make clean"
+    d) Ejecutar "./run" para correr el programa
+
+2) Cargar entradas de cámara:
+    2.1) normales:
+        - echo EAAA111 >> "/tmp/camaras"
+        - echo SAAA111 >> "/tmp/camaras"
+    2.2) forzando la hora (HH:mm):
+        - echo "EAAA111 07:01" >> "/tmp/camaras"
+        - echo "SAAA111 13:56" >> "/tmp/camaras"
+
+NOTA:
+    Puede simular un flujo de entrada de cámara
+    ejecuntado "./camara.sh" en otra terminal
