@@ -161,7 +161,7 @@ int procesar_solicitud(t_mensaje* m){
 			printf("PROMEDIO MATERIA\n");
 			res = get_promedio(m->dni, m->materia);
 			if(res!=0){
-				printf("CALCULO DE PROMEDIO DE MATERIA EXITOSO!\n");
+				printf("\nCALCULO DE PROMEDIO DE MATERIA EXITOSO!\n");
 				m->nota = res;
 			}
 			else{
