@@ -17,6 +17,8 @@ Instrucciones
 4) Cerrar servidor:
 	a) Presionar ctrl + c para terminar el proceso limpiamente.
 
+5) La base de datos se encuentra en ./Ejercicio_5/servidor/db/db.dat
+
 Configuración
 -------------
 
