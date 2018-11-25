@@ -25,11 +25,3 @@ echo "EBBB000 21:05" >> $FIFO_CAMARAS
 sleep 1
 echo "SIII111 22:00" >> $FIFO_CAMARAS
 sleep 1
-
-
-
-
-
-
-
-

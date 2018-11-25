@@ -111,6 +111,15 @@ int main()
                     continue;
                 }
             }
+            else
+            {
+                // si es una salida sin entreda anterior
+                printf("[%s] no registra una entrada previa\n", entrada.patente);
+                printf("--------------------------------------\n");
+
+                // nueva salida ignorada
+                continue;
+            }
         }
 
         insertar(entrada);
