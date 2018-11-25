@@ -294,8 +294,10 @@ void proceso_facturador()
                     cobrado += precio / 4;
                 }
                 if (minutos > 0)
+                {
                     // precio cada 15 minutos
                     cobrado += precio / 4;
+                }
 
                 // si la patente ya existía en la lista
                 // se encarga de sumar lo "cobrado" para manter

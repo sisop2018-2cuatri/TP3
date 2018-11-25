@@ -8,3 +8,7 @@ Salida  BBB000  20:00
 Salida  AAA999  20:30
 Entrada BBB000  21:05
 Salida  III111  22:00
+Entrada AA111BB 22:00
+Salida  AA111BB 23:00
+Entrada III111  22:01
+Salida  III111  23:01
