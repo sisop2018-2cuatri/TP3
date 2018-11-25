@@ -6,7 +6,6 @@ typedef struct dato
     char patente[8]; // ej: AA000AA\0
     int hora;        // hora del evento
     int minuto;      // minuto del evento
-    float precio;    // precio por hora
 } t_dato;
 
 void insertar(t_dato x);

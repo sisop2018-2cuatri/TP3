@@ -1,10 +1,10 @@
 Entrada AAA999  09:12
 Entrada III111  09:00
-Salida  AAA999  14:30 $25.00
+Salida  AAA999  14:30
 Entrada AAA999  17:40
 Entrada BBB000  18:00
 Entrada CAB000  18:00
-Salida  BBB000  20:00 $30.00
-Salida  AAA999  20:30 $25.00
+Salida  BBB000  20:00
+Salida  AAA999  20:30
 Entrada BBB000  21:05
-Salida  III111  22:00 $29.10
+Salida  III111  22:00

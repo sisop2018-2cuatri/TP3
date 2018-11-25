@@ -17,6 +17,7 @@
 int f_camaras;
 char log_name[1000];
 char hoy[32];
+float precio;
 
 char *getFecha(char *hoy);
 void getHora(char *msg, int *hora, int *minuto);
@@ -42,6 +43,10 @@ int main()
     printf("|                                     |\n");
     printf("| Para facturar el día use \"Ctrl + C\" |\n");
     printf("***************************************\n\n");
+
+    printf("ingrese precio por hora: ");
+    fflush(stdin);
+    scanf("%f", &precio);
 
     // crear archivo de log
     generarLogDia();
@@ -106,10 +111,6 @@ int main()
                     continue;
                 }
             }
-
-            printf("ingrese precio por hora: ");
-            fflush(stdin);
-            scanf("%f", &entrada.precio);
         }
 
         insertar(entrada);
@@ -128,12 +129,7 @@ int main()
         {
             fprintf(f_log, " ");
         }
-        fprintf(f_log, "%02d:%02d", entrada.hora, entrada.minuto);
-        if (entrada.dir == 'S' || entrada.dir == 's')
-        {
-            fprintf(f_log, " $%.2f", entrada.precio);
-        }
-        fprintf(f_log, "\n");
+        fprintf(f_log, "%02d:%02d\n", entrada.hora, entrada.minuto);
         fclose(f_log);
     }
 
@@ -278,7 +274,7 @@ void proceso_facturador()
             if (r_siguiente.dir == 'S' || r_siguiente.dir == 's')
             {
                 // calcular cobrado (precio por hora, fracción cada 15 minutos)
-                cobrado = (r_siguiente.hora - dato.hora) * r_siguiente.precio;
+                cobrado = (r_siguiente.hora - dato.hora) * precio;
 
                 // fracción cada 15 min
                 minutos = ABS(r_siguiente.minuto - dato.minuto);
@@ -286,11 +282,11 @@ void proceso_facturador()
                 {
                     minutos -= 15;
                     // precio cada 15 minutos
-                    cobrado += r_siguiente.precio / 4;
+                    cobrado += precio / 4;
                 }
                 if (minutos > 0)
                     // precio cada 15 minutos
-                    cobrado += r_siguiente.precio / 4;
+                    cobrado += precio / 4;
 
                 // si la patente ya existía en la lista
                 // se encarga de sumar lo "cobrado" para manter

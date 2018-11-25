@@ -74,18 +74,11 @@ void imprimir()
 
 void mostrar(t_dato x)
 {
-    printf("[%s] [%s] [%d:%d]",
+    printf("[%s] [%s] [%02d:%02d]\n",
            DIRECCION(x.dir),
            x.patente,
            x.hora,
            x.minuto);
-
-    if (x.dir == 'S' || x.dir == 's')
-    {
-        printf(" [%.2f]", x.precio);
-    }
-
-    printf("\n");
 }
 
 void vaciar_cola()
