@@ -92,4 +92,6 @@ void pausa();
 
 void print_error(int);
 
+void print_debug(char*);
+
 #endif

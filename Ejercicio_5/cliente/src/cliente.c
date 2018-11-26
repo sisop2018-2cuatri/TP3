@@ -134,6 +134,8 @@ void cargar_nueva_nota(void)
     nota.codigo = CARGAR;
     int eva_aux;
 
+    print_debug("CARGA NOTA");
+
     printf("INGRESE DNI:\n");
     scanf("%ld",&(nota.dni));
 
@@ -149,23 +151,32 @@ void cargar_nueva_nota(void)
     
     strcpy(nota.materia, configuracion.materia);
     
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO PERMISO PARA COMENZAR TRANSACCION");
     sem_wait(mutex_i);
-    
+    print_debug("SEMAFORO PASADO - COMIENZO TRANSACCION");
+
+    print_debug("ESCRIBIENDO EN SHM PETICION");
     *data = nota;
 
+    print_debug("LIBERANDO SEMAFORO - PARA QUE EL SERVIDOR PUEDA LEER PETICION");
     sem_post(mutex_d);
+    print_debug("SEMAFORO LIBERADO - AHORA EL SERVIDOR PUEDE LEER PETICION");
+
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO QUE EL SERVIDOR ESCRIBA RESPUESTA");
     sem_wait(mutex_f);
+    print_debug("SEMAFORO PASADO - LEYENDO RESPUESTA DEL SERVIDOR");
 
     //leo respuesta
     if(data->codigo == EXITO){
         printf("CARGA EXITOSA\n");
-        //printf("CODIGO RECIBIDO:%d\n", data->codigo);
     }
     else{
-        //printf("CARGA FALLIDA\n");
         print_error(data->codigo);
     }
+
+    print_debug("LIBERANDO SEMAFORO - PARA PERMITIR COMENZAR NUEVA TRANSACCION");
     sem_post(mutex_i);
+    print_debug("SEMAFORO LIBERADO - PUEDE COMENZAR UNA NUEVA TRANSACCION");
 }
 
 
@@ -179,24 +190,32 @@ void obtener_promedio_materia(void)
     scanf("%ld",&(nota.dni));
     strcpy(nota.materia, configuracion.materia);
    
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO PERMISO PARA COMENZAR TRANSACCION");
     sem_wait(mutex_i);
-    
+    print_debug("SEMAFORO PASADO - COMIENZO TRANSACCION");
+
+    print_debug("ESCRIBIENDO EN SHM PETICION");
     *data = nota;
 
+    print_debug("LIBERANDO SEMAFORO - PARA QUE EL SERVIDOR PUEDA LEER PETICION");
     sem_post(mutex_d);
+    print_debug("SEMAFORO LIBERADO - AHORA EL SERVIDOR PUEDE LEER PETICION");
+
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO QUE EL SERVIDOR ESCRIBA RESPUESTA");
     sem_wait(mutex_f);
+    print_debug("SEMAFORO PASADO - LEYENDO RESPUESTA DEL SERVIDOR");
 
     //leo respuesta
     if(data->codigo == EXITO){
-        //printf("CONSULTA EXITOSA\n");
         printf("PROMEDIO MATERIA %s: %.2f\n", data->materia, data->nota);
     }
     else{
-        //printf("CONSULTA FALLIDA\n");
         print_error(data->codigo);
     }
 
+    print_debug("LIBERANDO SEMAFORO - PARA PERMITIR COMENZAR NUEVA TRANSACCION");
     sem_post(mutex_i);
+    print_debug("SEMAFORO LIBERADO - PUEDE COMENZAR UNA NUEVA TRANSACCION");
 }
 
 
@@ -210,31 +229,45 @@ void obtener_promedio_general(void)
     printf("INGRESE DNI:\n");
     scanf("%ld",&(nota.dni));
    
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO PERMISO PARA COMENZAR TRANSACCION");
     sem_wait(mutex_i);
-    
-    //Paso la variable local a la shm
+    print_debug("SEMAFORO PASADO - COMIENZO TRANSACCION");
+
+
+    print_debug("ESCRIBIENDO EN SHM PETICION");
     *data = nota;
 
+    print_debug("LIBERANDO SEMAFORO - PARA QUE EL SERVIDOR PUEDA LEER PETICION");
     sem_post(mutex_d);
+    print_debug("SEMAFORO LIBERADO - AHORA EL SERVIDOR PUEDE LEER PETICION");
+
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO QUE EL SERVIDOR ESCRIBA RESPUESTA");
     sem_wait(mutex_f);
+    print_debug("SEMAFORO PASADO - LEYENDO RESPUESTA DEL SERVIDOR");
 
     //Leo respuesta
     if(data->codigo == EXITO){
-        //printf("CONSULTA EXITOSA\n");
         printf("PROMEDIO GENERAL: %.2f\n", data->nota);
     }
     else{
-        //printf("CONSULTA FALLIDA\n");
         print_error(data->codigo);
     }
 
+    print_debug("LIBERANDO SEMAFORO - PARA PERMITIR COMENZAR NUEVA TRANSACCION");
     sem_post(mutex_i);
+    print_debug("SEMAFORO LIBERADO - PUEDE COMENZAR UNA NUEVA TRANSACCION");
 }
 
 int inicializar_conexion(){
-    int fd = shm_open(NAME, O_RDWR, 0666);
+    int fd;
+
+    print_debug("ABRO SHARED MEMORY");
+    fd = shm_open(NAME, O_RDWR, 0666);
+    print_debug("ABRO SEMAFORO DE LECTURA DE MENSAJE EN SERVIDOR");
     mutex_d = sem_open("mutex_d", O_CREAT);
+    print_debug("ABRO SEMAFORO DE TRANSACCION");
     mutex_i = sem_open("mutex_i", O_CREAT);
+    print_debug("ABRO SEMAFORO DE LECTURA DE RESPUESTA");
     mutex_f = sem_open("mutex_f", O_CREAT);
 
     if(fd<0){
@@ -285,5 +318,11 @@ void print_error(int e){
             printf("ERROR: CANTIDAD DE NOTAS INSUFICIENTES PARA EL ALUMNO\n"
                    "NO TIENE NINGUNA NOTA O LE FALTA RENDIR EL SEGUNDO PARCIAL\n");
             break;
+    }
+}
+
+void print_debug(char* cadena){
+    if(configuracion.modo_ejecucion == 1){
+        printf("DEBUG: %s\n", cadena);
     }
 }

@@ -27,7 +27,7 @@
 
 int fd; //file descriptor usado para la shared memory
 t_mensaje *data; //mensaje usado para comunicarse a travez de la shared memory
-sem_t* mutex_i, *mutex_d, *mutex_f, *mutex_DB; //semaforos a usar
+sem_t* mutex_i, *mutex_d, *mutex_f; //semaforos a usar
 FILE* db; //base de datos
 s_config configuracion; //estructura de configuracion
 
@@ -79,7 +79,6 @@ int inicializar_servidor(){
 	mutex_d = sem_open("mutex_d", O_CREAT, 0660, 0); //creacion de semaforo, acceso server a shm
 	mutex_i = sem_open("mutex_i", O_CREAT, 0660, 1); //creacion de semaforo
 	mutex_f = sem_open("mutex_f", O_CREAT, 0660, 0); //creacion de semaforo
-	mutex_DB = sem_open("mutex_DB", O_CREAT, 0660, 1); //creacion de semaforo de acceso a la DB
 
 	
 	if(fd<0){
@@ -98,17 +97,26 @@ int inicializar_servidor(){
 	signal(SIGTERM, cerrar_servidor); //atrapo la señal sigterm y cierro el servidor
 
 	while(1){ //se cierra con interrupiones, uma delicia
+		
 		printf("\nESPERANDO SOLICITUDES...\n");
+		
+		print_debug("ESPERANDO SEMAFORO - LECTURA DE SHM DE MENSAJE...");
 		sem_wait(mutex_d);
+		print_debug("SEMAFORO LIBERADO - LEYENDO DE SHM...");
+		
 		printf("\n<<SOLICITUD RECIBIDA>>\n");
 		data->evaluacion--;
 		printf("--> MENSAJE RECIBIDO:\nCODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
-		sem_wait(mutex_DB);
+
+	    print_debug("PROCESANDO SOLITUD...");
 		res=procesar_solicitud(data);
-		sem_post(mutex_DB);
+	    print_debug("SOLICITUD PROCESADA");
+
 		data->codigo = res;
 		printf("<-- MENSAJE A ENVIAR:\nCODIGO: %d\tDNI: %ld\tMATERIA: %s\tTIPO EV: %d\nNOTA: %f\n", data->codigo, data->dni, data->materia, data->evaluacion, data->nota);
+		
 		sem_post(mutex_f);
+		print_debug("SEMAFORO LIBERADO - ESCRITURA DE MENSAJE DE RESPUESTA");
 	}
 }
 
@@ -126,8 +134,6 @@ void cerrar_servidor(){
 	sem_unlink("mutex_f");
 	print_debug("UNLINK SEM D...");
 	sem_unlink("mutex_d");
-	print_debug("UNLINK SEM DB...");
-	sem_unlink("mutex_DB");
 
 	print_debug("FIN\n");
 	exit(EXIT_SUCCESS);
