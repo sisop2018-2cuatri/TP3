@@ -193,7 +193,8 @@ void obtener_promedio_materia(void)
     if(peticion_servidor()==EXIT_SUCCESS){
         print_debug("TRANSACCION EXITOSA");
     }else{
-        print_debug("TRANSACCION FALLIDA");
+        print_debug("TRANSACCION FALLIDA, NO SE PUDO TERMINAR LA TRANSACCION.");
+        return;
     }
 
     //leo respuesta
@@ -222,7 +223,8 @@ void obtener_promedio_general(void)
     if(peticion_servidor()==EXIT_SUCCESS){
         print_debug("TRANSACCION EXITOSA");
     }else{
-        print_debug("TRANSACCION FALLIDA");
+        print_debug("TRANSACCION FALLIDA, NO SE PUDO TERMINAR LA TRANSACCION.");
+        return;
     }
 
     //Leo respuesta
