@@ -52,7 +52,8 @@ int main(){
     }
 
     // Iniciar servidor
-    inicializar_servidor();
+    if(inicializar_servidor()==EXIT_FAILURE)
+	    printf("Error en la comunicacion (semaforos) con los clientes.\nCerrando...\n");
     
     return 1;
 }
@@ -76,9 +77,9 @@ int inicializar_servidor(){
 	t_mensaje *data;
 
 	fd = shm_open(NAME, O_CREAT | O_EXCL | O_RDWR, 0600); //creacion de memoria compartida
-	mutex_d = sem_open("mutex_d", O_CREAT, 0660, 0); //creacion de semaforo, acceso server a shm
-	mutex_i = sem_open("mutex_i", O_CREAT, 0660, 1); //creacion de semaforo
-	mutex_f = sem_open("mutex_f", O_CREAT, 0660, 0); //creacion de semaforo
+	mutex_d = sem_open("mutex_d", O_CREAT, 0777, 0); //creacion de semaforo, acceso server a shm
+	mutex_i = sem_open("mutex_i", O_CREAT, 0777, 1); //creacion de semaforo
+	mutex_f = sem_open("mutex_f", O_CREAT, 0777, 0); //creacion de semaforo
 
 	
 	if(fd<0){

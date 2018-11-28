@@ -19,12 +19,18 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <semaphore.h>
+#include <time.h>
 
 sem_t* mutex_i;
 sem_t* mutex_d;
 sem_t* mutex_f;
 t_mensaje* data;
+t_mensaje nota;
 s_config configuracion;
+struct timespec tiempo;
+int status_server;
+int fd; //file descriptor de la shared memory
+
 
 int main(){
     cargar_config(&configuracion);
@@ -40,12 +46,16 @@ int main(){
     }
 
     // inicializar la conexión
-    inicializar_conexion();
+   
+   if(inicializar_conexion()==EXIT_FAILURE){
+   	printf("Error con la comunicacion con el servidor\nCerrando...\n");
+	return 0;
+   }
     
     // menú de opciones
     mostrar_menu();
     
-    return 1;
+    return EXIT_SUCCESS;
 }
 
 
@@ -116,7 +126,7 @@ void mostrar_menu(void)
             break;
         }
         if(opcion != '4') pausa();
-    } while (opcion != '4');
+    } while (opcion != '4' && status_server==1);
 
     // cerrar la conexión
     finalizar_conexion();
@@ -130,7 +140,6 @@ void mostrar_menu(void)
 //ver cliente.h
 void cargar_nueva_nota(void)
 {
-    t_mensaje nota;
     nota.codigo = CARGAR;
     int eva_aux;
 
@@ -151,20 +160,12 @@ void cargar_nueva_nota(void)
     
     strcpy(nota.materia, configuracion.materia);
     
-    print_debug("ESPERANDO SEMAFORO - ESPERANDO PERMISO PARA COMENZAR TRANSACCION");
-    sem_wait(mutex_i);
-    print_debug("SEMAFORO PASADO - COMIENZO TRANSACCION");
-
-    print_debug("ESCRIBIENDO EN SHM PETICION");
-    *data = nota;
-
-    print_debug("LIBERANDO SEMAFORO - PARA QUE EL SERVIDOR PUEDA LEER PETICION");
-    sem_post(mutex_d);
-    print_debug("SEMAFORO LIBERADO - AHORA EL SERVIDOR PUEDE LEER PETICION");
-
-    print_debug("ESPERANDO SEMAFORO - ESPERANDO QUE EL SERVIDOR ESCRIBA RESPUESTA");
-    sem_wait(mutex_f);
-    print_debug("SEMAFORO PASADO - LEYENDO RESPUESTA DEL SERVIDOR");
+    if(peticion_servidor()==EXIT_SUCCESS){
+        print_debug("TRANSACCION EXITOSA");
+    }else{
+        print_debug("TRANSACCION FALLIDA, NO SE PUDO TERMINAR LA TRANSACCION.");
+        return;
+    }
 
     //leo respuesta
     if(data->codigo == EXITO){
@@ -183,27 +184,17 @@ void cargar_nueva_nota(void)
 //ver cliente.h
 void obtener_promedio_materia(void)
 {
-    t_mensaje nota;
     nota.codigo = PROMAT;
 
     printf("INGRESE DNI:\n");
     scanf("%ld",&(nota.dni));
     strcpy(nota.materia, configuracion.materia);
    
-    print_debug("ESPERANDO SEMAFORO - ESPERANDO PERMISO PARA COMENZAR TRANSACCION");
-    sem_wait(mutex_i);
-    print_debug("SEMAFORO PASADO - COMIENZO TRANSACCION");
-
-    print_debug("ESCRIBIENDO EN SHM PETICION");
-    *data = nota;
-
-    print_debug("LIBERANDO SEMAFORO - PARA QUE EL SERVIDOR PUEDA LEER PETICION");
-    sem_post(mutex_d);
-    print_debug("SEMAFORO LIBERADO - AHORA EL SERVIDOR PUEDE LEER PETICION");
-
-    print_debug("ESPERANDO SEMAFORO - ESPERANDO QUE EL SERVIDOR ESCRIBA RESPUESTA");
-    sem_wait(mutex_f);
-    print_debug("SEMAFORO PASADO - LEYENDO RESPUESTA DEL SERVIDOR");
+    if(peticion_servidor()==EXIT_SUCCESS){
+        print_debug("TRANSACCION EXITOSA");
+    }else{
+        print_debug("TRANSACCION FALLIDA");
+    }
 
     //leo respuesta
     if(data->codigo == EXITO){
@@ -222,28 +213,17 @@ void obtener_promedio_materia(void)
 //ver cliente.h
 void obtener_promedio_general(void)
 {
-    t_mensaje nota;
     nota.codigo = PROGEN;
     
     //Ingreso de DNI
     printf("INGRESE DNI:\n");
     scanf("%ld",&(nota.dni));
    
-    print_debug("ESPERANDO SEMAFORO - ESPERANDO PERMISO PARA COMENZAR TRANSACCION");
-    sem_wait(mutex_i);
-    print_debug("SEMAFORO PASADO - COMIENZO TRANSACCION");
-
-
-    print_debug("ESCRIBIENDO EN SHM PETICION");
-    *data = nota;
-
-    print_debug("LIBERANDO SEMAFORO - PARA QUE EL SERVIDOR PUEDA LEER PETICION");
-    sem_post(mutex_d);
-    print_debug("SEMAFORO LIBERADO - AHORA EL SERVIDOR PUEDE LEER PETICION");
-
-    print_debug("ESPERANDO SEMAFORO - ESPERANDO QUE EL SERVIDOR ESCRIBA RESPUESTA");
-    sem_wait(mutex_f);
-    print_debug("SEMAFORO PASADO - LEYENDO RESPUESTA DEL SERVIDOR");
+    if(peticion_servidor()==EXIT_SUCCESS){
+        print_debug("TRANSACCION EXITOSA");
+    }else{
+        print_debug("TRANSACCION FALLIDA");
+    }
 
     //Leo respuesta
     if(data->codigo == EXITO){
@@ -259,28 +239,40 @@ void obtener_promedio_general(void)
 }
 
 int inicializar_conexion(){
-    int fd;
-
     print_debug("ABRO SHARED MEMORY");
-    fd = shm_open(NAME, O_RDWR, 0666);
+    fd = shm_open(NAME, O_RDWR, 0777);
+    if(fd<0)
+	    print_debug("EROR APERTURA SHM");
+    else
+	    print_debug("EXITO APERTURA SHM");
+    status_server=1;
     print_debug("ABRO SEMAFORO DE LECTURA DE MENSAJE EN SERVIDOR");
-    mutex_d = sem_open("mutex_d", O_CREAT);
+    mutex_d = sem_open("mutex_d", O_RDWR);
     print_debug("ABRO SEMAFORO DE TRANSACCION");
-    mutex_i = sem_open("mutex_i", O_CREAT);
+    mutex_i = sem_open("mutex_i", O_RDWR);
     print_debug("ABRO SEMAFORO DE LECTURA DE RESPUESTA");
-    mutex_f = sem_open("mutex_f", O_CREAT);
+    mutex_f = sem_open("mutex_f", O_RDWR);
 
     if(fd<0){
-        perror("shm_open()");
+        if(configuracion.modo_ejecucion == 1)
+		perror("shm_open()");
         return EXIT_FAILURE;
     }
 
     data = (t_mensaje *)mmap(0, sizeof(t_mensaje), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-    return 1;
+    tiempo.tv_sec = 3;
+    tiempo.tv_nsec = 0;
+
+    return EXIT_SUCCESS;
 };
 
-void finalizar_conexion(){};
+void finalizar_conexion(){
+	sem_close(mutex_d);
+	sem_close(mutex_i);
+	sem_close(mutex_f);
+	close(fd);
+}
 
 void pausa(){
     while( getchar() != '\n' );
@@ -321,8 +313,51 @@ void print_error(int e){
     }
 }
 
+
 void print_debug(char* cadena){
     if(configuracion.modo_ejecucion == 1){
         printf("DEBUG: %s\n", cadena);
     }
+}
+
+int peticion_servidor(){
+    int res_timedwait; //donde guardo el resultado de la espera
+
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO PERMISO PARA COMENZAR TRANSACCION");
+    
+    get_tiempo(3);
+    res_timedwait = sem_timedwait(mutex_i, &tiempo);
+    if(res_timedwait == -1){
+        printf("Se acabo el tiempo de espera al servidor.\nServidor offline o en mantenimiento.\nSaliendo...\n");
+        status_server=0;
+        return EXIT_FAILURE;
+    }
+    
+    print_debug("SEMAFORO PASADO - COMIENZO TRANSACCION");
+
+    print_debug("ESCRIBIENDO EN SHM PETICION");
+    *data = nota;
+
+    print_debug("LIBERANDO SEMAFORO - PARA QUE EL SERVIDOR PUEDA LEER PETICION");
+    sem_post(mutex_d);
+    print_debug("SEMAFORO LIBERADO - AHORA EL SERVIDOR PUEDE LEER PETICION");
+
+    print_debug("ESPERANDO SEMAFORO - ESPERANDO QUE EL SERVIDOR ESCRIBA RESPUESTA");
+    
+    get_tiempo(3);
+    res_timedwait=sem_timedwait(mutex_f, &tiempo);
+    if(res_timedwait == -1){
+        printf("Se acabo el tiempo de espera al servidor.\nServidor offline o en mantenimiento.\nSaliendo...\n");
+        status_server=0;
+        return EXIT_FAILURE;
+    }
+    
+    print_debug("SEMAFORO PASADO - LEYENDO RESPUESTA DEL SERVIDOR");
+
+    return EXIT_SUCCESS;
+}
+
+void get_tiempo(int timeout){
+    clock_gettime(CLOCK_REALTIME, &tiempo);
+    tiempo.tv_sec+=timeout;
 }

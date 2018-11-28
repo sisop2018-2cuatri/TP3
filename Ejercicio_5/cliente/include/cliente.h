@@ -94,4 +94,8 @@ void print_error(int);
 
 void print_debug(char*);
 
+int peticion_servidor();
+
+void get_tiempo(int);
+
 #endif

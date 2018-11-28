@@ -1,7 +1,0 @@
-#MANUAL USUARIO PARA EL EJERCICIO5
-
-Para instalar la apilicacion, se ejecuta en la carpeta principal del proyecto
->make
->make install
-
-En la instalacion se copia un archivo de configuracion de la carpeta conf/ a ~/.config/adlms/Ejercicio5/conf.conf. Si quiere expandir la cantidad de memoria compartida o cambiar el nombre de la memoria compartida se puede modificar desde ese archivo.
